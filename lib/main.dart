@@ -1,20 +1,26 @@
+// =================================================================
+// 📁 ARQUIVO: lib/main.dart
+// =================================================================
+// 🎯 Ponto de entrada principal da aplicação.
+
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // 1. Importe o dotenv
+import 'firebase_options.dart';
+import 'app.dart';
 
-void main() {
-  runApp(const MainApp());
-}
+void main() async {
+  // Garanta que os bindings do Flutter foram inicializados
+  WidgetsFlutterBinding.ensureInitialized();
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  // 2. Carregue as variáveis de ambiente do arquivo .env
+  await dotenv.load(fileName: ".env");
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
-    );
-  }
+  // 3. Inicialize o Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Rode o App
+  runApp(const TechChefApp());
 }

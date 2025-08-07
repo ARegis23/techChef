@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "449390386374",
+    "project_id": "techchefapp",
+    "storage_bucket": "techchefapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:449390386374:android:ad5bf17a067b1f856e8bc7",
+        "android_client_info": {
+          "package_name": "com.example.aplicativofuncional"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLeXbDh4-o8j8yG_5yZGQb2fZHsfgJzPE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
