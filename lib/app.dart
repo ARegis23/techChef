@@ -12,6 +12,7 @@ import '../modules/settings/settings.dart';
 import '../modules/about/about.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/theme_provider.dart';
+import '../modules/splash/splash_page.dart';
 
 class TechChefApp extends StatelessWidget {
   const TechChefApp({super.key});
@@ -29,13 +30,15 @@ class TechChefApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
 
-      // O Flutter vai escolher o tema automaticamente baseado na configuração do celular.
-      // Podemos criar um seletor manual mais tarde.
+      // Define o tema atual baseado no ThemeProvider
       themeMode: themeProvider.themeMode,  
 
+      // Define a tela de splash como a rota inicial
+      initialRoute: AppRoutes.splash, 
+
       // Configuração das rotas
-      initialRoute: AppRoutes.login,
       routes: {
+        AppRoutes.splash: (context) => const SplashPage(),
         AppRoutes.login: (context) => const LoginPage(),
         AppRoutes.dashboard: (context) => const DashboardPage(),
         AppRoutes.settings: (context) => const SettingsPage(),
