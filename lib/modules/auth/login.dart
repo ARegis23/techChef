@@ -144,7 +144,9 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 32),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 const Text('Primeiro acesso?'),
-                TextButton(onPressed: () { /* TODO: Navegar para registro */ }, child: const Text('Crie um perfil')),
+                TextButton(onPressed: () {
+                  AppRoutes.userEditor;
+                 }, child: const Text('Crie um perfil')),
               ]),
             ],
           ),

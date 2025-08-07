@@ -4,9 +4,14 @@
 // 🎯 Centraliza as constantes com os nomes das rotas para evitar erros.
 
 class AppRoutes {
-  static const String splash = '/'; // A tela de splash é a nova rota inicial
-  static const String login = '/login'; // A tela de login agora tem sua própria rota
+  static const String splash = '/';
+  static const String login = '/login';
   static const String dashboard = '/dashboard';
   static const String settings = '/settings';
   static const String about = '/about';
+
+    // Rotas de perfil
+  static const String userDashboard = '/user/dashboard';
+  static const String userEditor = '/user/editor';
+  static const String userFamilyView = '/user/family';
 }
