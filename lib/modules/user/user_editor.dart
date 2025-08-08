@@ -142,7 +142,7 @@ class _UserEditorPageState extends State<UserEditorPage> {
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('perfil.png'), // Use uma imagem para o cadastro
+                  image: AssetImage('assets/perfil.png'), // Use uma imagem para o cadastro
                   fit: BoxFit.cover,
                 ),
               ),

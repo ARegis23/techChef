@@ -1,1 +1,39 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"techchefapp","appId":"1:449390386374:android:ad5bf17a067b1f856e8bc7","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"techchefapp","configurations":{"android":"1:449390386374:android:ad5bf17a067b1f856e8bc7","ios":"1:449390386374:ios:7d54d168aa9b21b56e8bc7","macos":"1:449390386374:ios:7d54d168aa9b21b56e8bc7","web":"1:449390386374:web:03598b9c78a52fac6e8bc7","windows":"1:449390386374:web:b038c78e763d1dd46e8bc7"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "techchefapp",
+          "appId": "1:449390386374:android:ad5bf17a067b1f856e8bc7",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "techchefapp",
+          "configurations": {
+            "android": "1:449390386374:android:ad5bf17a067b1f856e8bc7",
+            "ios": "1:449390386374:ios:7d54d168aa9b21b56e8bc7",
+            "macos": "1:449390386374:ios:7d54d168aa9b21b56e8bc7",
+            "web": "1:449390386374:web:03598b9c78a52fac6e8bc7",
+            "windows": "1:449390386374:web:b038c78e763d1dd46e8bc7"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
