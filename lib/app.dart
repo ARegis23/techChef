@@ -6,13 +6,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/routes.dart';
-import '../modules/auth/login.dart';
-import '../modules/dashboard/dashboard.dart';
-import '../modules/settings/settings.dart';
-import '../modules/about/about.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/theme_provider.dart';
-import '../modules/splash/splash_page.dart';
+import '../core/route_generator.dart';
 
 class TechChefApp extends StatelessWidget {
   const TechChefApp({super.key});
@@ -37,13 +33,15 @@ class TechChefApp extends StatelessWidget {
       initialRoute: AppRoutes.splash, 
 
       // Configuração das rotas
-      routes: {
-        AppRoutes.splash: (context) => const SplashPage(),
-        AppRoutes.login: (context) => const LoginPage(),
-        AppRoutes.dashboard: (context) => const DashboardPage(),
-        AppRoutes.settings: (context) => const SettingsPage(),
-        AppRoutes.about: (context) => const AboutPage(),
-      },
+      onGenerateRoute: RouteGenerator.generateRoute,
+
+      // Trate rotas desconhecidas
+      onUnknownRoute: (settings) => MaterialPageRoute(
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text('Erro de Rota')),
+          body: Center(child: Text('Rota não encontrada: ${settings.name}')),
+        ),
+      ),
       debugShowCheckedModeBanner: false,
     );
   }

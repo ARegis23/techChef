@@ -1,5 +1,5 @@
 // =================================================================
-// 📁 ARQUIVO: lib/modules/profile/views/user_family_view.dart
+// 📁 ARQUIVO: lib/modules/user/user_family_view.dart
 // =================================================================
 // 👨‍👩‍👧‍👦 Tela para visualizar a lista de familiares cadastrados.
 

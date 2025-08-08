@@ -1,75 +1,66 @@
 // =================================================================
-// 📁 ARQUIVO: lib/core/navigation/route_generator.dart
+// 📁 ARQUIVO: lib/core/route_generator.dart
 // =================================================================
-// 🚦 Controla a criação de todas as rotas, aplicando uma tela de
-//    carregamento entre as transições de página.
+// 🚦 Controla a criação de todas as rotas.
 
 import 'package:flutter/material.dart';
-
+import 'routes.dart';
 import '../modules/about/about.dart';
 import '../modules/auth/login.dart';
+import '../modules/auth/verify_email_page.dart';
 import '../modules/dashboard/dashboard.dart';
 import '../modules/settings/settings.dart';
 import '../modules/splash/splash_page.dart';
-import 'routes.dart';
-
+import '../modules/user/user_dashboard.dart';
+import '../modules/user/user_editor.dart';
+import '../modules/user/user_family_view.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
-    // A tela de Splash é um caso especial, ela não deve ter um carregamento antes de si mesma.
-    if (settings.name == AppRoutes.splash) {
-      return MaterialPageRoute(builder: (_) => const SplashPage());
-    }
+    print('✅ [RouteGenerator] ROTA CHAMADA: ${settings.name}');
 
-    // Para todas as outras rotas, nós retornamos uma rota que primeiro
-    // constrói uma tela de carregamento temporária.
-    return MaterialPageRoute(
-      builder: (context) => FutureBuilder(
-        // Usamos um Future.delayed para simular o carregamento de dados.
-        // Um tempo curto (500ms) é ideal para não prejudicar a experiência do usuário.
-        future: Future.delayed(const Duration(milliseconds: 500)),
-        builder: (context, snapshot) {
-          // Enquanto o delay está ativo, mostramos uma tela de carregamento.
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Preparando a próxima tela...'),
-                  ],
-                ),
-              ),
-            );
-          }
+    final args = settings.arguments as Map<String, dynamic>?;
 
-          // Quando o delay termina, construímos a página de destino real.
-          return _buildPage(settings);
-        },
-      ),
-      settings: settings, // É importante passar os settings para a nova rota.
-    );
-  }
-
-  // Função auxiliar para obter o widget da página com base no nome da rota.
-  static Widget _buildPage(RouteSettings settings) {
+    Widget page;
     switch (settings.name) {
+      case AppRoutes.splash:
+        page = const SplashPage();
+        break;
       case AppRoutes.login:
-        return const LoginPage();
+        page = const LoginPage();
+        break;
       case AppRoutes.dashboard:
-        return const DashboardPage();
+        page = const DashboardPage();
+        break;
       case AppRoutes.settings:
-        return const SettingsPage();
+        page = const SettingsPage();
+        break;
       case AppRoutes.about:
-        return const AboutPage();
+        page = const AboutPage();
+        break;
+      case AppRoutes.userDashboard:
+        page = const UserDashboardPage();
+        break;
+      case AppRoutes.userEditor:
+        page = UserEditorPage(arguments: args);
+        break;
+      case AppRoutes.userFamilyView:
+        page = const UserFamilyViewPage();
+        break;
+      
+      // 2. ADICIONE O CASO PARA A NOVA ROTA
+      case AppRoutes.verifyEmail:
+        page = const VerifyEmailPage();
+        break;
+
       default:
-        // Rota de erro caso a página não seja encontrada.
-        return Scaffold(
-          appBar: AppBar(title: const Text('Erro')),
-          body: const Center(child: Text('Página não encontrada')),
+        page = Scaffold(
+          appBar: AppBar(title: const Text('Erro de Rota')),
+          body: Center(child: Text('ERRO: Rota não encontrada para "${settings.name}"')),
         );
+        break;
     }
+    
+    return MaterialPageRoute(builder: (_) => page, settings: settings);
   }
 }

@@ -1,11 +1,15 @@
 // =================================================================
 // 📁 ARQUIVO: lib/modules/auth/views/login_page.dart
 // =================================================================
-// 🔐 Tela de Login com layout responsivo.
+// 🔐 Tela de Login com layout responsivo e lógica de autenticação completa.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/routes.dart';
+import '../../../services/auth_service.dart';
+import '../../../services/database_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,21 +19,77 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  // Controladores e estado
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _forgotPasswordEmailController = TextEditingController();
   bool _rememberMe = false;
+  bool _isLoading = false;
+  final AuthService _authService = AuthService();
+  bool _isPasswordVisible = false;
 
-  void _login() {
-    // TODO: Implementar lógica de autenticação com Firebase
-    Navigator.of(context).pushReplacementNamed(AppRoutes.dashboard);
+  // Função para realizar o login com e-mail e senha
+  Future<void> _login() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      await _authService.signInWithEmailAndPassword(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+      if (mounted) Navigator.of(context).pushReplacementNamed(AppRoutes.dashboard);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_authService.getErrorMessage(e)), backgroundColor: Colors.redAccent),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
-  void _signInWithGoogle() {
-    // TODO: Implementar lógica de autenticação com google_sign_in e Firebase
-    print('Login com Google clicado!');
-  }
+  // Função para login com Google (lógica local)
+  Future<void> _signInWithGoogle() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return; // Usuário cancelou
+      }
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final user = userCredential.user;
 
+      if (user != null) {
+        final dbService = DatabaseService(uid: user.uid);
+        final userData = await dbService.getUserData();
+        if (userData == null) {
+          await dbService.updateUserData(
+            user.displayName ?? 'Usuário Google',
+            user.email ?? '',
+          );
+        }
+        if (mounted) Navigator.of(context).pushReplacementNamed(AppRoutes.dashboard);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro no login com Google: ${e.toString()}'), backgroundColor: Colors.redAccent),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+  
+  // Função para mostrar o diálogo de recuperação de senha
   void _showForgotPasswordDialog() {
     showDialog(
       context: context,
@@ -61,20 +121,13 @@ class _LoginPageState extends State<LoginPage> {
 
   // Widget que constrói o painel da imagem para telas grandes
   Widget _buildImagePanel() {
-    // Usamos Center para centralizar o conteúdo dentro do espaço disponível.
     return Center(
-      // Adicionamos padding para criar um respiro nas bordas.
       child: Padding(
         padding: const EdgeInsets.all(40.0),
         child: ClipRRect(
-          // ClipRRect para aplicar bordas arredondadas à imagem, combinando com o design.
           borderRadius: BorderRadius.circular(24.0),
           child: ConstrainedBox(
-            // Limitamos o tamanho máximo da imagem para que ela não ocupe todo o espaço.
-            constraints: const BoxConstraints(
-              maxWidth: 500,
-              maxHeight: 700,
-            ),
+            constraints: const BoxConstraints(maxWidth: 500, maxHeight: 700),
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
@@ -93,9 +146,9 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildLoginForm() {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 40.0), // Aumenta o padding
+        padding: const EdgeInsets.symmetric(horizontal: 40.0),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400), // Limita a largura do formulário
+          constraints: const BoxConstraints(maxWidth: 400),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -103,25 +156,33 @@ class _LoginPageState extends State<LoginPage> {
               Container(
                 height: 200,
                 width: 200,
-                decoration: BoxDecoration(
-                  // Define a forma do container como um círculo perfeito.
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
-                    // IMPORTANTE: Garante que a imagem inteira apareça dentro do círculo
-                    // sem ser cortada ou deformada.
                     fit: BoxFit.contain,
-                    
-                    // Lembre-se de usar o caminho completo do asset, ex: 'assets/logo.png'
-                    image: AssetImage('logo.png'), 
+                    image: AssetImage('assets/logo.png'), 
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               const Text('Bem-vindo', textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              const Text('Versão 1.0.1.8.25', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey),),
               const SizedBox(height: 40),
               TextField(controller: _emailController, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined))),
               const SizedBox(height: 16),
-              TextField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Senha', prefixIcon: Icon(Icons.lock_outline))),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: !_isPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: 'Senha',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -131,7 +192,13 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              ElevatedButton(onPressed: _login, child: const Text('Entrar')),
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator())
+              else
+                ElevatedButton(
+                  onPressed: _login,
+                  child: const Text('Entrar'),
+                ),
               const SizedBox(height: 24),
               const Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 8.0), child: Text('OU')), Expanded(child: Divider())]),
               const SizedBox(height: 24),
@@ -144,9 +211,15 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 32),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 const Text('Primeiro acesso?'),
-                TextButton(onPressed: () {
-                  AppRoutes.userEditor;
-                 }, child: const Text('Crie um perfil')),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(
+                      AppRoutes.userEditor,
+                      arguments: {'isRegisteringNewAdmin': true},
+                    );
+                  },
+                  child: const Text('Crie um perfil'),
+                ),
               ]),
             ],
           ),
@@ -161,32 +234,20 @@ class _LoginPageState extends State<LoginPage> {
       body: SafeArea(
         child: Stack(
           children: [
-            // O LayoutBuilder verifica o tamanho da tela e decide qual layout mostrar
             LayoutBuilder(
               builder: (context, constraints) {
-                // Define um ponto de quebra. Se a tela for maior que 900 pixels, mostra o layout de duas colunas.
                 if (constraints.maxWidth > 900) {
                   return Row(
                     children: [
-                      // Metade esquerda: Formulário de Login
-                      Expanded(
-                        flex: 1,
-                        child: _buildLoginForm(),
-                      ),
-                      // Metade direita: Imagem
-                      Expanded(
-                        flex: 1,
-                        child: _buildImagePanel(),
-                      ),
+                      Expanded(flex: 1, child: _buildLoginForm()),
+                      Expanded(flex: 1, child: _buildImagePanel()),
                     ],
                   );
                 } else {
-                  // Para telas menores, mostra apenas o formulário de login centralizado.
                   return _buildLoginForm();
                 }
               },
             ),
-            // Ícone "Sobre" continua posicionado no canto superior direito
             Positioned(
               top: 16,
               right: 16,

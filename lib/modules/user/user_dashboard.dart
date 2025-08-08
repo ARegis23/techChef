@@ -1,5 +1,5 @@
 // =================================================================
-// 📁 ARQUIVO: lib/modules/profile/views/user_dashboard.dart
+// 📁 ARQUIVO: lib/modules/user/user_dashboard.dart
 // =================================================================
 // 👤 Painel de controle para o administrador gerenciar perfis.
 

@@ -14,4 +14,5 @@ class AppRoutes {
   static const String userDashboard = '/user/dashboard';
   static const String userEditor = '/user/editor';
   static const String userFamilyView = '/user/family';
+  static const String verifyEmail = '/auth/verify-email';
 }
