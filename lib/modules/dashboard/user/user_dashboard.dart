@@ -4,7 +4,7 @@
 // 👤 Painel de controle para o administrador gerenciar perfis.
 
 import 'package:flutter/material.dart';
-import '../../../core/routes.dart';
+import '../../../../core/routes.dart';
 
 class UserDashboardPage extends StatelessWidget {
   const UserDashboardPage({super.key});

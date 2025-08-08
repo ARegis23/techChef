@@ -11,9 +11,12 @@ import '../modules/auth/verify_email_page.dart';
 import '../modules/dashboard/dashboard.dart';
 import '../modules/settings/settings.dart';
 import '../modules/splash/splash_page.dart';
-import '../modules/user/user_dashboard.dart';
-import '../modules/user/user_editor.dart';
-import '../modules/user/user_family_view.dart';
+import '../modules/dashboard/user/user_dashboard.dart';
+import '../modules/dashboard/user/user_editor.dart';
+import '../modules/dashboard/user/user_family_view.dart';
+import '../modules/dashboard/menus/menu_dashboard.dart';
+import '../modules/dashboard/shopping/shopping_dashboard.dart';
+import '../modules/dashboard/inventory/inventory_dashboard.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -47,6 +50,15 @@ class RouteGenerator {
       case AppRoutes.userFamilyView:
         page = const UserFamilyViewPage();
         break;
+      case AppRoutes.menus:
+        page = const MenusPage();
+        break;
+      case AppRoutes.shoppingList:
+        page = const ShoppingPage();
+        break;
+      case AppRoutes.inventory:
+        page = const InventoryPage();
+        break;        
       
       // 2. ADICIONE O CASO PARA A NOVA ROTA
       case AppRoutes.verifyEmail:

@@ -4,7 +4,7 @@
 // 👨‍👩‍👧‍👦 Tela para visualizar a lista de familiares cadastrados.
 
 import 'package:flutter/material.dart';
-import '../../../core/routes.dart';
+import '../../../../core/routes.dart';
 
 class UserFamilyViewPage extends StatelessWidget {
   const UserFamilyViewPage({super.key});

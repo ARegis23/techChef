@@ -5,9 +5,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../core/routes.dart';
-import '../../services/auth_service.dart';
-import '../../services/database_service.dart';
+import '../../../core/routes.dart';
+import '../../../services/auth_service.dart';
+import '../../../services/database_service.dart';
 
 class UserEditorPage extends StatefulWidget {
   final Map<String, dynamic>? arguments;

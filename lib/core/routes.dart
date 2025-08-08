@@ -15,4 +15,9 @@ class AppRoutes {
   static const String userEditor = '/user/editor';
   static const String userFamilyView = '/user/family';
   static const String verifyEmail = '/auth/verify-email';
+
+  // Rotas de funcionalidades
+  static const String menus = '/menus';
+  static const String shoppingList = '/shopping';
+  static const String inventory = '/inventory';
 }

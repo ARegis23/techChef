@@ -6,7 +6,6 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Evita que a classe seja instanciada.
   AppTheme._();
 
   // =================================================================
@@ -15,14 +14,10 @@ class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    
-    // Esquema de Cores
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.deepOrange,
       brightness: Brightness.light,
     ),
-
-    // Estilo da AppBar
     appBarTheme: const AppBarTheme(
       elevation: 2,
       backgroundColor: Colors.deepOrange,
@@ -30,19 +25,15 @@ class AppTheme {
       centerTitle: true,
     ),
 
-    // Estilo dos Cards
-    /*cardTheme: CardTheme(
-      elevation: 1,
+    // CORREÇÃO: Usamos CardThemeData para definir o tema.
+    cardTheme: CardThemeData(
+      elevation: 2.0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Colors.grey.shade300,
-          width: 1,
-        ),
+        borderRadius: BorderRadius.circular(16.0),
       ),
-    ),*/
+      clipBehavior: Clip.antiAlias,
+    ),
 
-    // Estilo dos Campos de Texto (Inputs)
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
@@ -51,8 +42,6 @@ class AppTheme {
       fillColor: Colors.grey.shade100,
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
     ),
-
-    // Estilo dos Botões Elevados
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(
@@ -75,16 +64,11 @@ class AppTheme {
   static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-
-    // Esquema de Cores
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.deepOrange,
       brightness: Brightness.dark,
-      // No tema escuro, a cor primária pode ser um pouco mais clara para ter melhor contraste
       primary: Colors.orange.shade400, 
     ),
-
-    // Estilo da AppBar
     appBarTheme: AppBarTheme(
       elevation: 2,
       backgroundColor: Colors.grey.shade900,
@@ -92,20 +76,16 @@ class AppTheme {
       centerTitle: true,
     ),
 
-    // Estilo dos Cards
-    /*cardTheme: CardTheme(
-      elevation: 1,
-      color: Colors.grey.shade800,
+    // CORREÇÃO: Usamos CardThemeData para definir o tema.
+    cardTheme: CardThemeData(
+      elevation: 2.0,
+      color: Colors.grey.shade800.withOpacity(0.6), // Um pouco translúcido para o fundo
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Colors.grey.shade700,
-          width: 1,
-        ),
+        borderRadius: BorderRadius.circular(16.0),
       ),
-    ),*/
+      clipBehavior: Clip.antiAlias,
+    ),
 
-    // Estilo dos Campos de Texto (Inputs)
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
@@ -114,8 +94,6 @@ class AppTheme {
       fillColor: Colors.grey.shade900,
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
     ),
-
-    // Estilo dos Botões Elevados
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(
