@@ -20,7 +20,7 @@ class AuthService {
   String getErrorMessage(dynamic e) {
     if (e is FirebaseAuthException) {
       switch (e.code) {
-        case 'user-not-found': return 'Usuário não encontrado.';
+        case 'user-not-found': return 'Utilizador não encontrado para este e-mail.';
         case 'wrong-password': return 'Senha incorreta.';
         case 'email-already-in-use': return 'Esse e-mail já está em uso.';
         case 'invalid-email': return 'E-mail inválido.';
@@ -56,19 +56,26 @@ class AuthService {
     }
   }
 
+  // 📩 NOVO MÉTODO: Enviar e-mail de recuperação de senha
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // 🚪 Logout
   Future<void> signOut() async {
-    // Como o GoogleSignIn será local da LoginPage, não precisamos chamá-lo aqui.
-    // A LoginPage cuidará disso.
     await _auth.signOut();
   }
 
-  // 📩 Verifica se e-mail foi confirmado
+  // Verifica se e-mail foi confirmado
   bool isEmailVerified() {
     return _auth.currentUser?.emailVerified ?? false;
   }
 
-  // 🔄 Atualiza o usuário para garantir verificação mais recente
+  // Atualiza o usuário para garantir verificação mais recente
   Future<void> refreshUser() async {
     await _auth.currentUser?.reload();
   }

@@ -94,26 +94,61 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Recuperar Senha'),
-          content: TextField(
-            controller: _forgotPasswordEmailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: 'Digite seu email',
-              prefixIcon: Icon(Icons.email_outlined),
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
-            ElevatedButton(
-              onPressed: () {
-                // TODO: Implementar lógica de envio de email de recuperação
-                Navigator.of(context).pop();
-              },
-              child: const Text('Enviar'),
-            ),
-          ],
+        // Usamos um StatefulBuilder para gerir o estado de carregamento dentro do diálogo
+        bool isDialogLoading = false;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Recuperar Senha'),
+              content: TextField(
+                controller: _forgotPasswordEmailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Digite seu e-mail',
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isDialogLoading ? null : () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: isDialogLoading ? null : () async {
+                    if (_forgotPasswordEmailController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Por favor, insira um e-mail.'), backgroundColor: Colors.orange),
+                      );
+                      return;
+                    }
+                    setDialogState(() => isDialogLoading = true);
+                    try {
+                      await _authService.sendPasswordResetEmail(_forgotPasswordEmailController.text.trim());
+                      if (mounted) {
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('E-mail de recuperação enviado com sucesso!'), backgroundColor: Colors.green),
+                        );
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(_authService.getErrorMessage(e)), backgroundColor: Colors.red),
+                        );
+                      }
+                    } finally {
+                       if (mounted) {
+                         setDialogState(() => isDialogLoading = false);
+                       }
+                    }
+                  },
+                  child: isDialogLoading
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Enviar'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -166,8 +201,10 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
               const Text('Bem-vindo', textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
               const SizedBox(height: 16),
-              const Text('Versão 1.0.1.8.25', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey),),
+              const Text('Versão 1.0.1.01.8.25', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey),),
+              ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
               const SizedBox(height: 40),
               TextField(controller: _emailController, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined))),
               const SizedBox(height: 16),

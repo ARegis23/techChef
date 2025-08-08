@@ -4,10 +4,22 @@
 // 📊 Tela principal após o login.
 
 import 'package:flutter/material.dart';
-import '../../../core/routes.dart';
+import 'package:google_sign_in/google_sign_in.dart'; 
+import '../../core/routes.dart';
+import '../../services/auth_service.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
+
+  // 3. Crie a função de logout
+  Future<void> _signOut(BuildContext context) async {
+    final authService = AuthService();
+    await GoogleSignIn().signOut(); 
+    await authService.signOut();  
+    if (context.mounted) {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +51,9 @@ class DashboardPage extends StatelessWidget {
               child: const Text('Sobre o App'),
             ),
             const SizedBox(height: 10),
+            // 4. Chame a nova função de logout
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-              },
+              onPressed: () => _signOut(context),
               child: const Text('Sair'),
             ),
           ],
