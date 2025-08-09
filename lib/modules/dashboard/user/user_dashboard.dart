@@ -1,10 +1,10 @@
 // =================================================================
 // 📁 ARQUIVO: lib/modules/user/user_dashboard.dart
 // =================================================================
-// 👤 Painel de controle para o administrador gerenciar perfis.
+// 👤 Painel de controle para o administrador gerir perfis, com novo design responsivo.
 
 import 'package:flutter/material.dart';
-import '../../../../core/routes.dart';
+import '../../../core/routes.dart';
 
 class UserDashboardPage extends StatelessWidget {
   const UserDashboardPage({super.key});
@@ -12,46 +12,120 @@ class UserDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Gerenciar Perfis'),
+        title: const Text('Gerir Perfis'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8.0),
+      body: Stack(
         children: [
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.person_pin_outlined),
-              title: const Text('Editar Meu Perfil'),
-              subtitle: const Text('Altere suas informações pessoais'),
-              onTap: () {
-                // Navega para a tela de edição, passando os dados do admin
-                // TODO: Passar os dados reais do usuário logado
-                Navigator.of(context).pushNamed(AppRoutes.userEditor, arguments: {'isFamilyMember': false});
-              },
+          // Imagem de Fundo
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: const AssetImage('perfil_background.png'),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.black.withOpacity(0.5),
+                  BlendMode.darken,
+                ),
+              ),
             ),
           ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.group_add_outlined),
-              title: const Text('Adicionar Familiar'),
-              subtitle: const Text('Cadastre um novo membro da família'),
-              onTap: () {
-                // Navega para a tela de edição em modo "adicionar familiar"
-                Navigator.of(context).pushNamed(AppRoutes.userEditor, arguments: {'isFamilyMember': true});
-              },
-            ),
+          // Conteúdo
+              SafeArea(
+                // 1. Usamos um LayoutBuilder aqui para obter a altura da viewport
+                child: LayoutBuilder(
+                  builder: (context, viewportConstraints) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(24.0),
+                      child: ConstrainedBox(
+                        // 2. Usamos um ConstrainedBox para definir a altura mínima
+                        constraints: BoxConstraints(
+                          minHeight: viewportConstraints.maxHeight - (24.0 * 2), // Subtrai o padding vertical
+                        ),
+                        // 3. Agora a Column ocupa a altura da tela, e podemos centralizá-la
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center, // <-- Centraliza verticalmente
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // 4. Seu LayoutBuilder e GridView entram aqui dentro, sem alterações
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                int crossAxisCount = 3;
+                                if (constraints.maxWidth > 1100) {
+                                  crossAxisCount = 3;
+                                } else if (constraints.maxWidth < 600) {
+                                  crossAxisCount = 1;
+                                }
+
+                                return GridView.count(
+                                  crossAxisCount: crossAxisCount,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  childAspectRatio: 1.2,
+                                  children: [
+                                    _buildOptionCard(
+                                      context,
+                                      icon: Icons.person,
+                                      title: 'Editar Meu Perfil',
+                                      subtitle: 'Altere as suas informações pessoais',
+                                      onTap: () {
+                                        Navigator.of(context).pushNamed(AppRoutes.userEditor, arguments: {'isFamilyMember': false});
+                                      },
+                                    ),
+                                    _buildOptionCard(
+                                      context,
+                                      icon: Icons.group_add_outlined,
+                                      title: 'Adicionar Familiar',
+                                      subtitle: 'Cadastre um novo membro da família',
+                                      onTap: () {
+                                        Navigator.of(context).pushNamed(AppRoutes.userEditor, arguments: {'isFamilyMember': true});
+                                      },
+                                    ),
+                                    _buildOptionCard(
+                                      context,
+                                      icon: Icons.groups_outlined,
+                                      title: 'Visualizar Família',
+                                      subtitle: 'Veja e gerencie os perfis cadastrados',
+                                      onTap: () {
+                                        Navigator.of(context).pushNamed(AppRoutes.userFamilyView);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.groups_outlined),
-              title: const Text('Visualizar Família'),
-              subtitle: const Text('Veja e gerencie os perfis cadastrados'),
-              onTap: () {
-                Navigator.of(context).pushNamed(AppRoutes.userFamilyView);
-              },
-            ),
-          ),
-        ],
+        
+      );
+  }
+
+  Widget _buildOptionCard(BuildContext context, {required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
+    // Definimos uma largura para os cards para que o Wrap funcione bem
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 48, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(height: 16),
+            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }

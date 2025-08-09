@@ -1,19 +1,19 @@
 // =================================================================
 // 📁 ARQUIVO: lib/services/database_service.dart
 // =================================================================
-// 🗄️ Serviço para gerenciar todas as operações com o banco de dados Firestore.
+// 🗄️ Serviço para gerenciar operações com o Firestore, agora com Streams.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
+import '../models/family_member_model.dart';
 
 class DatabaseService {
   final String? uid;
   DatabaseService({this.uid});
 
-  // Referência para a coleção de usuários
   final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
 
-  // Salva ou atualiza os dados do usuário
+  // --- MÉTODOS DE UTILIZADOR ---
   Future<void> updateUserData(String name, String email, {String theme = 'system'}) async {
     return await userCollection.doc(uid).set({
       'name': name,
@@ -21,16 +21,27 @@ class DatabaseService {
       'themePreference': theme,
     });
   }
-  
-  // NOVO MÉTODO: Salva apenas a preferência de tema
-  Future<void> updateUserThemePreference(String themePreference) async {
+
+  Future<void> updateAdminProfile({
+    required String name,
+    double? weight,
+    double? height,
+    Timestamp? birthDate,
+  }) async {
     if (uid == null) return;
     return await userCollection.doc(uid).update({
-      'themePreference': themePreference,
+      'name': name,
+      'weight': weight,
+      'height': height,
+      'birthDate': birthDate,
     });
   }
+  
+  Future<void> updateUserThemePreference(String themePreference) async {
+    if (uid == null) return;
+    return await userCollection.doc(uid).update({'themePreference': themePreference});
+  }
 
-  // Obtém os dados do usuário a partir do Firestore
   Future<AppUser?> getUserData() async {
     try {
       DocumentSnapshot doc = await userCollection.doc(uid).get();
@@ -40,5 +51,23 @@ class DatabaseService {
       print(e);
       return null;
     }
+  }
+
+  // --- MÉTODOS PARA FAMILIARES ---
+  CollectionReference get familyCollection => userCollection.doc(uid).collection('family');
+
+  Future<void> upsertFamilyMember(FamilyMember member) async {
+    final docId = member.id == 'new' ? null : member.id;
+    return await familyCollection.doc(docId).set(member.toMap());
+  }
+
+  Future<void> deleteFamilyMember(String memberId) async {
+    return await familyCollection.doc(memberId).delete();
+  }
+
+  Stream<List<FamilyMember>> get familyStream {
+    return familyCollection.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => FamilyMember.fromFirestore(doc)).toList();
+    });
   }
 }

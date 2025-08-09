@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Regra para a coleção 'users'
+    match /users/{userId} {
+      // Permite que um utilizador autenticado leia e escreva apenas no seu próprio documento.
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Regra para a subcoleção 'family'
+      match /family/{memberId} {
+        // Permite que o dono do documento (o admin) crie, leia, atualize e exclua
+        // documentos de familiares dentro da sua própria conta.
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
