@@ -1,5 +1,8 @@
 rules_version = '2';
+
+// Define as regras para o serviço cloud.firestore
 service cloud.firestore {
+  // Aplica as regras a todos os documentos na sua base de dados
   match /databases/{database}/documents {
 
     // Regra para a coleção 'users'
@@ -9,8 +12,12 @@ service cloud.firestore {
 
       // Regra para a subcoleção 'family'
       match /family/{memberId} {
-        // Permite que o dono do documento (o admin) crie, leia, atualize e exclua
-        // documentos de familiares dentro da sua própria conta.
+        // Permite que o dono da conta (o admin) gerencie os seus familiares.
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Permite que o o admin gerencie as suas receitas.
+      match /recipes/{recipeId} {
         allow read, write, delete: if request.auth != null && request.auth.uid == userId;
       }
     }

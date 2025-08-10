@@ -4,6 +4,7 @@
 // 🗄️ Serviço para gerenciar operações com o Firestore, agora com Streams.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/recipe_model.dart';
 import '../models/user_model.dart';
 import '../models/family_member_model.dart';
 
@@ -80,6 +81,29 @@ class DatabaseService {
   Stream<List<FamilyMember>> get familyStream {
     return familyCollection.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => FamilyMember.fromFirestore(doc)).toList();
+    });
+  }
+
+  // --- NOVOS MÉTODOS PARA RECEITAS ---
+
+  // Referência para a subcoleção 'recipes' dentro do documento do utilizador.
+  CollectionReference get recipesCollection => userCollection.doc(uid).collection('recipes');
+
+  // Adiciona ou atualiza uma receita.
+  Future<void> upsertRecipe(Recipe recipe) async {
+    final docId = recipe.id == 'new' ? null : recipe.id;
+    return await recipesCollection.doc(docId).set(recipe.toMap());
+  }
+
+  // Exclui uma receita.
+  Future<void> deleteRecipe(String recipeId) async {
+    return await recipesCollection.doc(recipeId).delete();
+  }
+
+  // Fornece um fluxo de dados em tempo real da lista de receitas.
+  Stream<List<Recipe>> get recipesStream {
+    return recipesCollection.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => Recipe.fromFirestore(doc)).toList();
     });
   }
 }

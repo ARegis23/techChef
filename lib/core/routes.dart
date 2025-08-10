@@ -20,4 +20,7 @@ class AppRoutes {
   static const String menus = '/menus';
   static const String shoppingList = '/shopping';
   static const String inventory = '/inventory';
+  static const String recipeBook = '/menus/recipes';
+  static const String recipeEditor = '/menus/recipes/editor';
+  static const String mealPlanner = '/menus/planner';
 }

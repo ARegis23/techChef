@@ -18,6 +18,8 @@ class AppTheme {
       seedColor: Colors.deepOrange,
       brightness: Brightness.light,
     ),
+
+    // AppBar com fundo laranja e texto branco
     appBarTheme: const AppBarTheme(
       elevation: 2,
       backgroundColor: Colors.deepOrange,
@@ -25,23 +27,27 @@ class AppTheme {
       centerTitle: true,
     ),
 
-    // CORREÇÃO: Usamos CardThemeData para definir o tema.
+    // cardTheme: Usamos CardThemeData para definir o tema.
     cardTheme: CardThemeData(
       elevation: 2.0,
+      color: Colors.grey.shade100.withOpacity(0.6),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
       ),
       clipBehavior: Clip.antiAlias,
     ),
 
+    // InputDecorationTheme para campos de texto
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
       ),
       filled: true,
-      fillColor: Colors.grey.shade100,
+      fillColor: Colors.grey.shade100.withOpacity(0.8),
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
     ),
+
+    // ElevatedButtonThemeData para botões elevados
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(
@@ -69,6 +75,8 @@ class AppTheme {
       brightness: Brightness.dark,
       primary: Colors.orange.shade400, 
     ),
+
+    // AppBar com fundo escuro e texto laranja
     appBarTheme: AppBarTheme(
       elevation: 2,
       backgroundColor: Colors.grey.shade900,
@@ -76,7 +84,7 @@ class AppTheme {
       centerTitle: true,
     ),
 
-    // CORREÇÃO: Usamos CardThemeData para definir o tema.
+    // cardTheme: Usamos CardThemeData para definir o tema.
     cardTheme: CardThemeData(
       elevation: 2.0,
       color: Colors.grey.shade800.withOpacity(0.6), // Um pouco translúcido para o fundo
@@ -86,6 +94,7 @@ class AppTheme {
       clipBehavior: Clip.antiAlias,
     ),
 
+    // InputDecorationTheme para campos de texto
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
@@ -94,6 +103,8 @@ class AppTheme {
       fillColor: Colors.grey.shade900,
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
     ),
+
+    // ElevatedButtonThemeData para botões elevados
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(

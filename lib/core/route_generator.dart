@@ -4,6 +4,9 @@
 // 🚦 Controla a criação de todas as rotas.
 
 import 'package:flutter/material.dart';
+import '../models/recipe_model.dart';
+import '../modules/dashboard/menus/recipe_book_page.dart';
+import '../modules/dashboard/menus/recipe_editor_page.dart';
 import 'routes.dart';
 import '../modules/about/about.dart';
 import '../modules/auth/login.dart';
@@ -58,8 +61,16 @@ class RouteGenerator {
         break;
       case AppRoutes.inventory:
         page = const InventoryPage();
-        break;        
-      
+        break;  
+      case AppRoutes.recipeBook:
+        page = const RecipeBookPage();
+        break;
+      case AppRoutes.recipeEditor:
+        final recipeToEdit = args?['recipe'] as Recipe?;
+        page = RecipeEditorPage(recipe: recipeToEdit);
+        break;
+
+
       // 2. ADICIONE O CASO PARA A NOVA ROTA
       case AppRoutes.verifyEmail:
         page = const VerifyEmailPage();
