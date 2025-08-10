@@ -14,7 +14,7 @@ class UserDashboardPage extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Gerir Perfis'),
+        title: const Text('Cuidando dos Cadastros'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -24,7 +24,7 @@ class UserDashboardPage extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage('perfil_background.png'),
+                image: const AssetImage('assets/perfil_background.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.5),

@@ -16,6 +16,8 @@ dependencies:
   flutter_svg: ^2.2.0
   google_sign_in: 6.1.5
   intl: ^0.20.2
+  firebase_storage: ^13.0.0
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -32,3 +34,4 @@ flutter:
     - assets/perfil.png
     - assets/dashboard_background.png
     - assets/perfil_background.png
+    - assets/perfil_build.jpg

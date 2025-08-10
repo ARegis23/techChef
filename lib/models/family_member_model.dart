@@ -9,44 +9,64 @@ class FamilyMember {
   final String id;
   final String name;
   final String relationship;
+  final String? imageUrl;
+  
+  // Campos de saúde
   final double? weight;
   final double? height;
   final Timestamp? birthDate;
-  final String? imageUrl; // NOVO CAMPO para a foto do perfil
+  final String? gender;
+  final String? transitioningTo;
+  final String? activityLevel;
+  final String? goal;
+  final List<String>? conditions;
 
   FamilyMember({
     required this.id,
     required this.name,
     required this.relationship,
+    this.imageUrl,
     this.weight,
     this.height,
     this.birthDate,
-    this.imageUrl,
+    this.gender,
+    this.transitioningTo,
+    this.activityLevel,
+    this.goal,
+    this.conditions,
   });
 
-  // Converte um DocumentSnapshot do Firestore num objeto FamilyMember.
   factory FamilyMember.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return FamilyMember(
       id: doc.id,
       name: data['name'] ?? '',
       relationship: data['relationship'] ?? '',
+      imageUrl: data['imageUrl'],
       weight: (data['weight'] as num?)?.toDouble(),
       height: (data['height'] as num?)?.toDouble(),
       birthDate: data['birthDate'] as Timestamp?,
-      imageUrl: data['imageUrl'],
+      gender: data['gender'],
+      transitioningTo: data['transitioningTo'],
+      activityLevel: data['activityLevel'],
+      goal: data['goal'],
+      conditions: List<String>.from(data['conditions'] ?? []),
     );
   }
 
-  // Converte um objeto FamilyMember num mapa para salvar no Firestore.
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'relationship': relationship,
+      'imageUrl': imageUrl,
       'weight': weight,
       'height': height,
       'birthDate': birthDate,
-      'imageUrl': imageUrl,
+      'gender': gender,
+      'transitioningTo': transitioningTo,
+      'activityLevel': activityLevel,
+      'goal': goal,
+      'conditions': conditions,
     };
   }
 }

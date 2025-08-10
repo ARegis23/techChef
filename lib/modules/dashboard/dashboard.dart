@@ -78,7 +78,7 @@ class _DashboardPageState extends State<DashboardPage> {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   // IMPORTANTE: Adicione uma imagem em 'assets/dashboard_background.png'
-                  image: const AssetImage('dashboard_background.png'),
+                  image: const AssetImage('assets/dashboard_background.png'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
                     Colors.black.withOpacity(0.4), // Escurece a imagem para melhor contraste

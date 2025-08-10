@@ -24,16 +24,28 @@ class DatabaseService {
 
   Future<void> updateAdminProfile({
     required String name,
+    String? imageUrl, // NOVO PARÂMETRO
     double? weight,
     double? height,
     Timestamp? birthDate,
+    String? gender,
+    String? transitioningTo,
+    String? activityLevel,
+    String? goal,
+    List<String>? conditions,
   }) async {
     if (uid == null) return;
     return await userCollection.doc(uid).update({
       'name': name,
+      'imageUrl': imageUrl, // NOVO CAMPO
       'weight': weight,
       'height': height,
       'birthDate': birthDate,
+      'gender': gender,
+      'transitioningTo': transitioningTo,
+      'activityLevel': activityLevel,
+      'goal': goal,
+      'conditions': conditions,
     });
   }
   
