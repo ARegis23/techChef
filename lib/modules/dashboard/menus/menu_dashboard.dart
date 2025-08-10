@@ -1,7 +1,7 @@
 // =================================================================
 // 📁 ARQUIVO: lib/modules/menus/menus_page.dart
 // =================================================================
-// 🍽️ Central de navegação para o Livro de Receitas e o Planeador Semanal.
+// 🍽️ Central de navegação para o Livro de Receitas e o Planejador Semanal.
 
 import 'package:flutter/material.dart';
 import '../../../core/routes.dart';

@@ -20,7 +20,13 @@ class AppRoutes {
   static const String menus = '/menus';
   static const String shoppingList = '/shopping';
   static const String inventory = '/inventory';
+
+  // Rotas de cardápios
   static const String recipeBook = '/menus/recipes';
   static const String recipeEditor = '/menus/recipes/editor';
   static const String mealPlanner = '/menus/planner';
+
+  //Rotas de Estoque.
+  static const String inventoryList = '/inventory/list';
+  static const String purchaseHistory = '/purchase/history';
 }
