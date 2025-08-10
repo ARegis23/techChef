@@ -17,6 +17,8 @@ import '../modules/dashboard/user/user_family_view.dart';
 import '../modules/dashboard/menus/menu_dashboard.dart';
 import '../modules/dashboard/shopping/shopping_dashboard.dart';
 import '../modules/dashboard/inventory/inventory_dashboard.dart';
+import '../modules/dashboard/inventory/inventory_list.dart';
+import '../modules/dashboard/inventory/purchase_history.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -58,7 +60,13 @@ class RouteGenerator {
         break;
       case AppRoutes.inventory:
         page = const InventoryPage();
-        break;        
+        break;  
+        case AppRoutes.inventoryList:
+        page = const InventoryListPage();
+        break;
+      case AppRoutes.purchaseHistory:
+        page = const PurchaseHistoryPage();
+        break;
       
       // 2. ADICIONE O CASO PARA A NOVA ROTA
       case AppRoutes.verifyEmail:
