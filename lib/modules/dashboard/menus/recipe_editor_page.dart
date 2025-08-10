@@ -1,7 +1,7 @@
 // =================================================================
 // 📁 ARQUIVO: lib/modules/menus/recipe_editor_page.dart
 // =================================================================
-// 📝 Página funcional para criar e editar receitas, com novo layout.
+// 📝 Página final e completa para gestão de receitas, com todas as funcionalidades.
 
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -12,7 +12,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../models/recipe_model.dart';
 import '../../../services/database_service.dart';
 import '../../../services/storage_service.dart';
-
 
 class RecipeEditorPage extends StatefulWidget {
   final Recipe? recipe;
@@ -84,6 +83,13 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
     }
   }
 
+  void _removeImage() {
+    setState(() {
+      _selectedImageFile = null;
+      _existingImageUrl = null;
+    });
+  }
+
   Future<void> _saveRecipe() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
@@ -91,6 +97,10 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
     String? finalImageUrl = _existingImageUrl;
 
     try {
+      if (_isEditing && widget.recipe!.imageUrl != null && _existingImageUrl == null && _selectedImageFile == null) {
+        await _storageService.deleteImageByUrl(widget.recipe!.imageUrl!);
+      }
+
       if (_selectedImageFile != null && currentUser != null) {
         final recipeId = _isEditing ? widget.recipe!.id : 'recipe_${DateTime.now().millisecondsSinceEpoch}';
         finalImageUrl = await _storageService.uploadProfilePicture(
@@ -154,6 +164,9 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
     if (confirm == true) {
       setState(() => _isLoading = true);
       try {
+        if(widget.recipe!.imageUrl != null) {
+          await _storageService.deleteImageByUrl(widget.recipe!.imageUrl!);
+        }
         await _dbService.deleteRecipe(widget.recipe!.id);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -187,6 +200,8 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool hasImage = _selectedImageFile != null || _existingImageUrl != null;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -199,7 +214,7 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage('perfil_build.jpg'),
+                image: const AssetImage('perfil_build.jpg'), // Imagem de fundo
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.darken),
               ),
@@ -250,26 +265,43 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
                             const Divider(height: 40),
                             Text('Foto do Prato', style: Theme.of(context).textTheme.titleLarge),
                             const SizedBox(height: 16),
-                            GestureDetector(
-                              onTap: _pickImage,
-                              child: AspectRatio(
-                                aspectRatio: 16 / 9,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300,
-                                    borderRadius: BorderRadius.circular(12),
-                                    image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: _selectedImageFile != null
-                                          ? (kIsWeb ? NetworkImage(_selectedImageFile!.path) : FileImage(File(_selectedImageFile!.path))) as ImageProvider
-                                          : (_existingImageUrl != null ? NetworkImage(_existingImageUrl!) : const AssetImage('placeholder.png')),
+                            Stack(
+                              alignment: Alignment.topRight,
+                              children: [
+                                GestureDetector(
+                                  onTap: _pickImage,
+                                  child: AspectRatio(
+                                    aspectRatio: 16 / 9,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade300,
+                                        borderRadius: BorderRadius.circular(12),
+                                        image: DecorationImage(
+                                          fit: BoxFit.cover,
+                                          image: _selectedImageFile != null
+                                              ? (kIsWeb ? NetworkImage(_selectedImageFile!.path) : FileImage(File(_selectedImageFile!.path))) as ImageProvider
+                                              : (_existingImageUrl != null ? NetworkImage(_existingImageUrl!) : const AssetImage('placeholder.png')),
+                                        ),
+                                      ),
+                                      child: !hasImage
+                                          ? const Center(child: Icon(Icons.add_a_photo_outlined, size: 50, color: Colors.white))
+                                          : null,
                                     ),
                                   ),
-                                  child: _selectedImageFile == null && _existingImageUrl == null
-                                      ? const Center(child: Icon(Icons.add_a_photo_outlined, size: 50, color: Colors.white))
-                                      : null,
                                 ),
-                              ),
+                                if (hasImage)
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: CircleAvatar(
+                                      backgroundColor: Colors.black.withOpacity(0.6),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.close, color: Colors.white),
+                                        onPressed: _removeImage,
+                                        tooltip: 'Remover Imagem',
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
 
                             const SizedBox(height: 32),

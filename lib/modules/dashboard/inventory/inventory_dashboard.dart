@@ -25,7 +25,7 @@ class InventoryPage extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage('assets/dashboard_background.png'), // Reutilizamos a imagem do dashboard
+                image: const AssetImage('inventory_background.png'), 
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.5),
