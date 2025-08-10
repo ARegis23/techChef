@@ -40,7 +40,7 @@ class _RecipeBookPageState extends State<RecipeBookPage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage('menus_background.png'),
+                image: const AssetImage('assets/menus_background.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.5), BlendMode.darken),
               ),

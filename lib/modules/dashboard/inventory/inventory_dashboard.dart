@@ -25,7 +25,7 @@ class InventoryPage extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage('inventory_background.png'), 
+                image: const AssetImage('assets/inventory_background.png'), 
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.5),

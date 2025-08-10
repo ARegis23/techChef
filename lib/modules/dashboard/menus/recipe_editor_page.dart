@@ -214,7 +214,7 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage('perfil_build.jpg'), // Imagem de fundo
+                image: const AssetImage('assets/perfil_build.jpg'), // Imagem de fundo
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.darken),
               ),
@@ -280,7 +280,7 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
                                           fit: BoxFit.cover,
                                           image: _selectedImageFile != null
                                               ? (kIsWeb ? NetworkImage(_selectedImageFile!.path) : FileImage(File(_selectedImageFile!.path))) as ImageProvider
-                                              : (_existingImageUrl != null ? NetworkImage(_existingImageUrl!) : const AssetImage('placeholder.png')),
+                                              : (_existingImageUrl != null ? NetworkImage(_existingImageUrl!) : const AssetImage('assets/placeholder.png')),
                                         ),
                                       ),
                                       child: !hasImage
