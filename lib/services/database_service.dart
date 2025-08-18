@@ -1,12 +1,13 @@
 // =================================================================
 // 📁 ARQUIVO: lib/services/database_service.dart
 // =================================================================
-// 🗄️ Serviço para gerenciar operações com o Firestore, agora com Streams.
+// 🗄️ Serviço completo para gerenciar todas as operações com o Firestore.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/recipe_model.dart';
 import '../models/user_model.dart';
 import '../models/family_member_model.dart';
+import '../models/recipe_model.dart';
+import '../models/inventory_item_model.dart';
 
 class DatabaseService {
   final String? uid;
@@ -25,7 +26,7 @@ class DatabaseService {
 
   Future<void> updateAdminProfile({
     required String name,
-    String? imageUrl, // NOVO PARÂMETRO
+    String? imageUrl,
     double? weight,
     double? height,
     Timestamp? birthDate,
@@ -38,7 +39,7 @@ class DatabaseService {
     if (uid == null) return;
     return await userCollection.doc(uid).update({
       'name': name,
-      'imageUrl': imageUrl, // NOVO CAMPO
+      'imageUrl': imageUrl,
       'weight': weight,
       'height': height,
       'birthDate': birthDate,
@@ -84,26 +85,39 @@ class DatabaseService {
     });
   }
 
-  // --- NOVOS MÉTODOS PARA RECEITAS ---
-
-  // Referência para a subcoleção 'recipes' dentro do documento do utilizador.
+  // --- MÉTODOS PARA RECEITAS ---
   CollectionReference get recipesCollection => userCollection.doc(uid).collection('recipes');
 
-  // Adiciona ou atualiza uma receita.
   Future<void> upsertRecipe(Recipe recipe) async {
     final docId = recipe.id == 'new' ? null : recipe.id;
     return await recipesCollection.doc(docId).set(recipe.toMap());
   }
 
-  // Exclui uma receita.
   Future<void> deleteRecipe(String recipeId) async {
     return await recipesCollection.doc(recipeId).delete();
   }
 
-  // Fornece um fluxo de dados em tempo real da lista de receitas.
   Stream<List<Recipe>> get recipesStream {
     return recipesCollection.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => Recipe.fromFirestore(doc)).toList();
+    });
+  }
+
+  // --- MÉTODOS PARA ESTOQUE ---
+  CollectionReference get inventoryCollection => userCollection.doc(uid).collection('inventory');
+
+  Future<void> upsertInventoryItem(InventoryItem item) async {
+    final docId = item.id == 'new' ? null : item.id;
+    return await inventoryCollection.doc(docId).set(item.toMap());
+  }
+
+  Future<void> deleteInventoryItem(String itemId) async {
+    return await inventoryCollection.doc(itemId).delete();
+  }
+
+  Stream<List<InventoryItem>> get inventoryStream {
+    return inventoryCollection.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => InventoryItem.fromFirestore(doc)).toList();
     });
   }
 }

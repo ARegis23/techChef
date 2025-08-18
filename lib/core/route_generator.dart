@@ -4,10 +4,10 @@
 // 🚦 Controla a criação de todas as rotas do aplicativo.
 
 import 'package:flutter/material.dart';
+import '../models/inventory_item_model.dart';
 import '../models/recipe_model.dart';
-import '../modules/dashboard/inventory/inventory_dashboard.dart';
-import '../modules/dashboard/inventory/inventory_list.dart';
-import '../modules/dashboard/inventory/purchase_history.dart';
+import '../modules/dashboard/inventory/inventory_editor_page.dart';
+import '../modules/dashboard/shopping/purchase_history.dart';
 import '../modules/dashboard/menus/menu_dashboard.dart';
 import '../modules/dashboard/menus/recipe_book_page.dart';
 import '../modules/dashboard/menus/recipe_editor_page.dart';
@@ -78,14 +78,12 @@ class RouteGenerator {
       case AppRoutes.shoppingList:
         page = const ShoppingPage();
         break;
-      case AppRoutes.inventory:
-        page = const InventoryPage();
-        break;
-      case AppRoutes.inventoryList:
-        page = const InventoryListPage();
-        break;
       case AppRoutes.purchaseHistory:
         page = const PurchaseHistoryPage();
+        break;
+      case AppRoutes.inventoryEditor:
+        final itemToEdit = args?['item'] as InventoryItem?;
+        page = InventoryEditorPage(item: itemToEdit);
         break;
 
       // Rota de Erro

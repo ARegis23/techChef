@@ -203,7 +203,7 @@ class _LoginPageState extends State<LoginPage> {
               const Text('Bem-vindo', textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
               const SizedBox(height: 16),
-              const Text('Versão 1.0.1.06.8.25', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey),),
+              const Text('Versão 1.0.1.07.8.25', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey),),
               ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
               const SizedBox(height: 40),
               TextField(controller: _emailController, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined))),

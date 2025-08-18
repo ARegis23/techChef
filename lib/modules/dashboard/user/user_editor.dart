@@ -10,7 +10,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-
 import '../../../core/routes.dart';
 import '../../../models/family_member_model.dart';
 import '../../../services/auth_service.dart';
@@ -57,6 +56,17 @@ class _UserEditorPageState extends State<UserEditorPage> {
   final StorageService _storageService = StorageService();
   XFile? _selectedImageFile;
   String? _existingImageUrl;
+
+  // Calcula a idade atual com base na data de nascimento selecionada
+  int? get _currentAge {
+    if (_selectedDate == null) return null;
+    final now = DateTime.now();
+    int age = now.year - _selectedDate!.year;
+    if (now.month < _selectedDate!.month || (now.month == _selectedDate!.month && now.day < _selectedDate!.day)) {
+      age--;
+    }
+    return age;
+  }
 
   @override
   void initState() {
@@ -223,12 +233,75 @@ class _UserEditorPageState extends State<UserEditorPage> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(context: context, initialDate: _selectedDate ?? DateTime.now(), firstDate: DateTime(1900), lastDate: DateTime.now());
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: _selectedDate ?? DateTime.now(),
+        firstDate: DateTime(1900),
+        lastDate: DateTime.now());
     if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
-      });
+      // Calcula a idade com base na data escolhida
+      final now = DateTime.now();
+      int age = now.year - picked.year;
+      if (now.month < picked.month || (now.month == picked.month && now.day < picked.day)) {
+        age--;
+      }
+
+      // Valida a idade mínima de 3 anos
+      if (age < 3) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Atenção: Idade Mínima'),
+              content: const Text(
+                  'Perfis com menos de 3 anos não são incluídos nos cálculos nutricionais familiares. Para esta faixa etária, recomendamos que procure orientação de um pediatra ou nutricionista para uma introdução alimentar adequada.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        // Se a idade for válida, atualiza o estado
+        setState(() {
+          final oldAge = _currentAge;
+          _selectedDate = picked;
+          _birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
+          final newAge = _currentAge;
+
+          if ((oldAge ?? 10) >= 10 && (newAge ?? 0) < 10 ||
+              (oldAge ?? 0) < 10 && (newAge ?? 10) >= 10) {
+            _activityLevel = null;
+          }
+        });
+      }
+    }
+  }
+
+  // Função que retorna a lista de opções de atividade física com base na idade.
+  List<DropdownMenuItem<String>> _getActivityLevelItems() {
+    final age = _currentAge;
+    // Se a idade for menor que 10, mostra as opções para crianças.
+    if (age != null && age < 10) {
+      return [
+        _buildTooltipDropdownItem('Sedentário', 'Apenas as atividades leves da vida cotidiana (ir à escola, fazer lição de casa, etc.).'),
+        _buildTooltipDropdownItem('Pouco Ativo', 'Atividades cotidianas + o equivalente a caminhar por 30-60 minutos em ritmo moderado.'),
+        _buildTooltipDropdownItem('Ativo', 'Atividades cotidianas + o equivalente a caminhar por pelo menos 60 minutos em ritmo moderado.'),
+        _buildTooltipDropdownItem('Muito Ativo', 'Atividades cotidianas + pelo menos 60 minutos de atividade moderada + 60 minutos de atividade vigorosa.'),
+      ];
+    } 
+    // Caso contrário (idade >= 10 ou sem data de nascimento), mostra as opções padrão.
+    else {
+      return [
+        _buildTooltipDropdownItem('Sedentário', 'Pouco ou nenhum exercício.'),
+        _buildTooltipDropdownItem('Levemente Ativo', 'Exercício leve 1-3 dias/semana.'),
+        _buildTooltipDropdownItem('Moderado', 'Exercício moderado 3-5 dias/semana.'),
+        _buildTooltipDropdownItem('Ativo', 'Exercício intenso 6-7 dias/semana.'),
+        _buildTooltipDropdownItem('Extremamente Ativo', 'Exercício muito intenso e trabalho físico.'),
+      ];
     }
   }
 
@@ -360,13 +433,7 @@ class _UserEditorPageState extends State<UserEditorPage> {
                       DropdownButtonFormField<String>(
                         value: _activityLevel,
                         decoration: const InputDecoration(labelText: 'Nível de Atividade Física', prefixIcon: Icon(Icons.fitness_center)),
-                        items: [
-                          _buildTooltipDropdownItem('Sedentário', 'Pouco ou nenhum exercício.'),
-                          _buildTooltipDropdownItem('Levemente Ativo', 'Exercício leve 1-3 dias/semana.'),
-                          _buildTooltipDropdownItem('Moderado', 'Exercício moderado 3-5 dias/semana.'),
-                          _buildTooltipDropdownItem('Ativo', 'Exercício intenso 6-7 dias/semana.'),
-                          _buildTooltipDropdownItem('Extremamente Ativo', 'Exercício muito intenso e trabalho físico.'),
-                        ],
+                        items: _getActivityLevelItems(),
                         onChanged: (newValue) => setState(() => _activityLevel = newValue),
                       ),
                       const SizedBox(height: 16),
