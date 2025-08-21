@@ -12,6 +12,7 @@ import '../modules/dashboard/menus/recipe_book_page.dart';
 import '../modules/dashboard/menus/recipe_editor_page.dart';
 import '../modules/dashboard/shopping/purchase_history.dart';
 import '../modules/dashboard/shopping/shopping_dashboard.dart';
+import '../modules/dashboard/shopping/shopping_list.dart';
 import '../modules/dashboard/user/user_dashboard.dart';
 import '../modules/dashboard/user/user_editor.dart';
 import '../modules/dashboard/user/user_family_view.dart';
@@ -71,15 +72,15 @@ class RouteGenerator {
         return RecipeEditorPage(recipe: recipeToEdit);
 
       // Compras e Estoque
-      case AppRoutes.shoppingList: return const ShoppingPage();
-      //case AppRoutes.inventory: return const InventoryPage();
+      case AppRoutes.shoppingPage: return const ShoppingPage();
+      case AppRoutes.shoppingListPage: return const ShoppingListPage();
       case AppRoutes.inventoryList: return const InventoryListPage();
       case AppRoutes.purchaseHistory: return const PurchaseHistoryPage();
       case AppRoutes.inventoryEditor:
         final itemToEdit = args?['item'] as InventoryItem?;
         return InventoryEditorPage(item: itemToEdit);
       
-      // CORREÇÃO: Leitura segura dos argumentos para evitar o TypeError
+      // CORREÇÃO: Leitura segura dos argumentos para evitar o TypeError 
       case AppRoutes.inventoryItemDetails:
         final item = args?['item'];
         if (item is InventoryItem) {

@@ -52,7 +52,7 @@ class ShoppingPage extends StatelessWidget {
                         title: 'Minhas Compras',
                         subtitle: 'Veja e atualize sua lista de compras',
                         onTap: () {
-                          Navigator.of(context).pushNamed(AppRoutes.shoppingList);
+                          Navigator.of(context).pushNamed(AppRoutes.shoppingListPage);
                         },
                       ),
                       _buildOptionCard(

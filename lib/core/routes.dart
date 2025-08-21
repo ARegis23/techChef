@@ -27,7 +27,7 @@ class AppRoutes {
   static const String mealPlanner = '/menus/planner';
 
   // Rotas de estoque e compras
-  static const String shoppingList = '/shopping/list';
+  static const String shoppingListPage = '/shopping/list';
   static const String purchaseHistory = '/shopping/history'; 
   static const String inventoryEditor = '/inventory/editor'; 
   static const String inventoryItemDetails = '/inventory/item/details';

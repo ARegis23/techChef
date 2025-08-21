@@ -124,11 +124,9 @@ class DatabaseService {
   }
 
   // --- MÉTODOS PARA LISTAS DE COMPRAS ---
-
   DocumentReference get activeShoppingListRef => userCollection.doc(uid).collection('shoppingLists').doc('active');
   CollectionReference get shoppingHistoryCollection => userCollection.doc(uid).collection('shoppingHistory');
 
-  // CORREÇÃO: Sintaxe do Stream corrigida
   Stream<ShoppingList?> get activeShoppingListStream {
     return activeShoppingListRef.snapshots().map((snapshot) {
       if (!snapshot.exists) return null;
@@ -136,7 +134,6 @@ class DatabaseService {
     });
   }
 
-  // CORREÇÃO: Sintaxe do Stream corrigida
   Stream<List<ShoppingList>> get shoppingHistoryStream {
     return shoppingHistoryCollection.orderBy('createdAt', descending: true).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => ShoppingList.fromFirestore(doc)).toList();
@@ -147,9 +144,7 @@ class DatabaseService {
     await activeShoppingListRef.set({
       'name': 'Lista de Compras Ativa',
       'createdAt': FieldValue.serverTimestamp(),
-      'items': {
-        item.id: item.toMap(),
-      }
+      'items': { item.id: item.toMap() }
     }, SetOptions(merge: true));
   }
 
@@ -159,36 +154,58 @@ class DatabaseService {
     });
   }
 
+  // MÉTODO ATUALIZADO com a lógica de somar itens no estoque
   Future<void> finalizeShopping(ShoppingList list, bool wasPartial) async {
-    final batch = FirebaseFirestore.instance.batch();
+    final purchasedItems = list.items.where((item) => item.isBought).toList();
+    if (purchasedItems.isEmpty) return;
 
-    final historyDoc = shoppingHistoryCollection.doc();
-    batch.set(historyDoc, {
-      'name': 'Compra de ${DateFormat('dd/MM/yyyy').format(list.createdAt.toDate())} (${wasPartial ? 'Parcial' : 'Total'})',
-      'createdAt': list.createdAt,
-      'items': list.items.where((item) => item.isBought).fold<Map<String, dynamic>>({}, (prev, item) => prev..[item.id] = item.toMap()),
-    });
+    // Usamos uma transação para garantir que a leitura e a escrita no estoque sejam atómicas
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      // 1. Adiciona a lista ao histórico
+      final historyDoc = shoppingHistoryCollection.doc();
+      transaction.set(historyDoc, {
+        'name': 'Compra de ${DateFormat('dd/MM/yyyy').format(list.createdAt.toDate())} (${wasPartial ? 'Parcial' : 'Total'})',
+        'createdAt': list.createdAt,
+        'items': purchasedItems.fold<Map<String, dynamic>>({}, (prev, item) => prev..[item.id] = item.toMap()),
+      });
 
-    for (var item in list.items) {
-      if (item.isBought) {
-        final inventoryRef = inventoryCollection.doc();
-        batch.set(inventoryRef, {
-          'name': item.name,
-          'quantity': item.quantity,
-          'unit': item.unit,
-          'lastPrice': item.price,
-          'lastPurchaseDate': list.createdAt,
-        });
+      // 2. Atualiza o estoque com os itens comprados
+      for (var item in purchasedItems) {
+        // Procura por um item existente no estoque com o mesmo nome (ignorando maiúsculas/minúsculas)
+        final querySnapshot = await inventoryCollection.where('name', isEqualTo: item.name).limit(1).get();
+        
+        if (querySnapshot.docs.isNotEmpty) {
+          // Se o item já existe, soma a quantidade
+          final existingDoc = querySnapshot.docs.first;
+          final existingItem = InventoryItem.fromFirestore(existingDoc);
+          final newQuantity = existingItem.quantity + item.quantity;
+          
+          transaction.update(existingDoc.reference, {
+            'quantity': newQuantity,
+            'lastPrice': item.price,
+            'lastPurchaseDate': list.createdAt,
+          });
+        } else {
+          // Se não existe, cria um novo item no estoque
+          final inventoryRef = inventoryCollection.doc();
+          transaction.set(inventoryRef, {
+            'name': item.name,
+            'quantity': item.quantity,
+            'unit': item.unit,
+            'lastPrice': item.price,
+            'lastPurchaseDate': list.createdAt,
+            // Adicione outros campos da API aqui se necessário
+          });
+        }
       }
-    }
 
-    if (wasPartial) {
-      final itemsToKeep = list.items.where((item) => !item.isBought).fold<Map<String, dynamic>>({}, (prev, item) => prev..[item.id] = item.toMap());
-      batch.update(activeShoppingListRef, {'items': itemsToKeep});
-    } else {
-      batch.update(activeShoppingListRef, {'items': {}});
-    }
-
-    await batch.commit();
+      // 3. Atualiza a lista de compras ativa
+      if (wasPartial) {
+        final itemsToKeep = list.items.where((item) => !item.isBought).fold<Map<String, dynamic>>({}, (prev, item) => prev..[item.id] = item.toMap());
+        transaction.update(activeShoppingListRef, {'items': itemsToKeep});
+      } else {
+        transaction.update(activeShoppingListRef, {'items': {}});
+      }
+    });
   }
 }

@@ -143,7 +143,7 @@ class _ShoppingPageState extends State<ShoppingListPage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage('assets/dashboard_background.png'),
+                image: const AssetImage('assets/shopping_list_background.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.darken),
               ),

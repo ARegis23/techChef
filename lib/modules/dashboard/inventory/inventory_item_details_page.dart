@@ -3,11 +3,8 @@
 // =================================================================
 // 🔎 Página para exibir os detalhes completos de um item do estoque.
 
-
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import '../../../core/routes.dart';
 import '../../../models/inventory_item_model.dart';
 
@@ -91,7 +88,8 @@ class InventoryItemDetailsPage extends StatelessWidget {
               ],
             ),
             const Divider(height: 32),
-            _buildInfoRow(Icons.price_change_outlined, 'Último Preço', '€ ${item.lastPrice?.toStringAsFixed(2) ?? 'N/A'}'),
+            // CORREÇÃO: Símbolo da moeda alterado para R$
+            _buildInfoRow(Icons.price_change_outlined, 'Último Preço', 'R\$ ${item.lastPrice?.toStringAsFixed(2) ?? 'N/A'}'),
             if (item.lastPurchaseDate != null)
               Padding(
                 padding: const EdgeInsets.only(left: 40.0),
