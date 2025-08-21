@@ -129,8 +129,8 @@ class _DashboardPageState extends State<DashboardPage> {
                           children: [
                             _buildFeatureCard(context, icon: Icons.groups_outlined, label: 'Perfis', color: Colors.blue.shade300, onTap: () => Navigator.of(context).pushNamed(AppRoutes.userDashboard)),
                             _buildFeatureCard(context, icon: Icons.restaurant_menu_outlined, label: 'Cardápios', color: Colors.orange.shade300, onTap: () => Navigator.of(context).pushNamed(AppRoutes.menus)),
-                            _buildFeatureCard(context, icon: Icons.shopping_cart_outlined, label: 'Compras', color: Colors.green.shade300, onTap: () => Navigator.of(context).pushNamed(AppRoutes.shoppingList)),
-                            _buildFeatureCard(context, icon: Icons.inventory_2_outlined, label: 'Estoque', color: Colors.purple.shade300, onTap: () => Navigator.of(context).pushNamed(AppRoutes.inventory)),
+                            _buildFeatureCard(context, icon: Icons.shopping_cart_outlined, label: 'Compras', color: Colors.green.shade300, onTap: () => Navigator.of(context).pushNamed(AppRoutes.shoppingPage)),
+                            _buildFeatureCard(context, icon: Icons.inventory_2_outlined, label: 'Estoque', color: Colors.purple.shade300, onTap: () => Navigator.of(context).pushNamed(AppRoutes.inventoryList)),
                           ],
                         );
                       },

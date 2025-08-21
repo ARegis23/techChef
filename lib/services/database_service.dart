@@ -4,6 +4,8 @@
 // 🗄️ Serviço completo para gerenciar todas as operações com o Firestore.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import '../models/shopping_list_model.dart';
 import '../models/user_model.dart';
 import '../models/family_member_model.dart';
 import '../models/recipe_model.dart';
@@ -119,5 +121,74 @@ class DatabaseService {
     return inventoryCollection.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => InventoryItem.fromFirestore(doc)).toList();
     });
+  }
+
+  // --- MÉTODOS PARA LISTAS DE COMPRAS ---
+
+  DocumentReference get activeShoppingListRef => userCollection.doc(uid).collection('shoppingLists').doc('active');
+  CollectionReference get shoppingHistoryCollection => userCollection.doc(uid).collection('shoppingHistory');
+
+  // CORREÇÃO: Sintaxe do Stream corrigida
+  Stream<ShoppingList?> get activeShoppingListStream {
+    return activeShoppingListRef.snapshots().map((snapshot) {
+      if (!snapshot.exists) return null;
+      return ShoppingList.fromFirestore(snapshot);
+    });
+  }
+
+  // CORREÇÃO: Sintaxe do Stream corrigida
+  Stream<List<ShoppingList>> get shoppingHistoryStream {
+    return shoppingHistoryCollection.orderBy('createdAt', descending: true).snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => ShoppingList.fromFirestore(doc)).toList();
+    });
+  }
+
+  Future<void> upsertShoppingItem(ShoppingListItem item) async {
+    await activeShoppingListRef.set({
+      'name': 'Lista de Compras Ativa',
+      'createdAt': FieldValue.serverTimestamp(),
+      'items': {
+        item.id: item.toMap(),
+      }
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> deleteShoppingItem(String itemId) async {
+    await activeShoppingListRef.update({
+      'items.$itemId': FieldValue.delete(),
+    });
+  }
+
+  Future<void> finalizeShopping(ShoppingList list, bool wasPartial) async {
+    final batch = FirebaseFirestore.instance.batch();
+
+    final historyDoc = shoppingHistoryCollection.doc();
+    batch.set(historyDoc, {
+      'name': 'Compra de ${DateFormat('dd/MM/yyyy').format(list.createdAt.toDate())} (${wasPartial ? 'Parcial' : 'Total'})',
+      'createdAt': list.createdAt,
+      'items': list.items.where((item) => item.isBought).fold<Map<String, dynamic>>({}, (prev, item) => prev..[item.id] = item.toMap()),
+    });
+
+    for (var item in list.items) {
+      if (item.isBought) {
+        final inventoryRef = inventoryCollection.doc();
+        batch.set(inventoryRef, {
+          'name': item.name,
+          'quantity': item.quantity,
+          'unit': item.unit,
+          'lastPrice': item.price,
+          'lastPurchaseDate': list.createdAt,
+        });
+      }
+    }
+
+    if (wasPartial) {
+      final itemsToKeep = list.items.where((item) => !item.isBought).fold<Map<String, dynamic>>({}, (prev, item) => prev..[item.id] = item.toMap());
+      batch.update(activeShoppingListRef, {'items': itemsToKeep});
+    } else {
+      batch.update(activeShoppingListRef, {'items': {}});
+    }
+
+    await batch.commit();
   }
 }

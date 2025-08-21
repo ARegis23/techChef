@@ -57,7 +57,6 @@ class _UserEditorPageState extends State<UserEditorPage> {
   XFile? _selectedImageFile;
   String? _existingImageUrl;
 
-  // Calcula a idade atual com base na data de nascimento selecionada
   int? get _currentAge {
     if (_selectedDate == null) return null;
     final now = DateTime.now();
@@ -233,28 +232,21 @@ class _UserEditorPageState extends State<UserEditorPage> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: _selectedDate ?? DateTime.now(),
-        firstDate: DateTime(1900),
-        lastDate: DateTime.now());
+    final DateTime? picked = await showDatePicker(context: context, initialDate: _selectedDate ?? DateTime.now(), firstDate: DateTime(1900), lastDate: DateTime.now());
     if (picked != null && picked != _selectedDate) {
-      // Calcula a idade com base na data escolhida
       final now = DateTime.now();
       int age = now.year - picked.year;
       if (now.month < picked.month || (now.month == picked.month && now.day < picked.day)) {
         age--;
       }
 
-      // Valida a idade mínima de 3 anos
       if (age < 3) {
         if (mounted) {
           showDialog(
             context: context,
             builder: (ctx) => AlertDialog(
               title: const Text('Atenção: Idade Mínima'),
-              content: const Text(
-                  'Perfis com menos de 3 anos não são incluídos nos cálculos nutricionais familiares. Para esta faixa etária, recomendamos que procure orientação de um pediatra ou nutricionista para uma introdução alimentar adequada.'),
+              content: const Text('Perfis com menos de 3 anos não são incluídos nos cálculos nutricionais familiares. Para esta faixa etária, recomendamos que procure orientação de um pediatra ou nutricionista para uma introdução alimentar adequada.'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
@@ -265,15 +257,13 @@ class _UserEditorPageState extends State<UserEditorPage> {
           );
         }
       } else {
-        // Se a idade for válida, atualiza o estado
         setState(() {
           final oldAge = _currentAge;
           _selectedDate = picked;
           _birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
           final newAge = _currentAge;
 
-          if ((oldAge ?? 10) >= 10 && (newAge ?? 0) < 10 ||
-              (oldAge ?? 0) < 10 && (newAge ?? 10) >= 10) {
+          if ((oldAge ?? 10) >= 10 && (newAge ?? 0) < 10 || (oldAge ?? 0) < 10 && (newAge ?? 10) >= 10) {
             _activityLevel = null;
           }
         });
@@ -281,10 +271,8 @@ class _UserEditorPageState extends State<UserEditorPage> {
     }
   }
 
-  // Função que retorna a lista de opções de atividade física com base na idade.
   List<DropdownMenuItem<String>> _getActivityLevelItems() {
     final age = _currentAge;
-    // Se a idade for menor que 10, mostra as opções para crianças.
     if (age != null && age < 10) {
       return [
         _buildTooltipDropdownItem('Sedentário', 'Apenas as atividades leves da vida cotidiana (ir à escola, fazer lição de casa, etc.).'),
@@ -293,7 +281,6 @@ class _UserEditorPageState extends State<UserEditorPage> {
         _buildTooltipDropdownItem('Muito Ativo', 'Atividades cotidianas + pelo menos 60 minutos de atividade moderada + 60 minutos de atividade vigorosa.'),
       ];
     } 
-    // Caso contrário (idade >= 10 ou sem data de nascimento), mostra as opções padrão.
     else {
       return [
         _buildTooltipDropdownItem('Sedentário', 'Pouco ou nenhum exercício.'),
@@ -499,6 +486,9 @@ class _UserEditorPageState extends State<UserEditorPage> {
     if (_isEditingAdmin) appBarTitle = 'Editar Meu Perfil';
     if (_isFamilyMember) appBarTitle = _editingMember == null ? 'Adicionar Familiar' : 'Editar Familiar';
 
+    // CORREÇÃO: O painel do formulário é construído uma única vez aqui.
+    final formPanel = _buildFormPanel();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(appBarTitle),
@@ -523,12 +513,14 @@ class _UserEditorPageState extends State<UserEditorPage> {
                 if (constraints.maxWidth > 900) {
                   return Row(
                     children: [
-                      Expanded(flex: 1, child: _buildFormPanel()),
+                      // Usa a instância única do painel do formulário
+                      Expanded(flex: 1, child: formPanel),
                       Expanded(flex: 1, child: _buildImagePanel()),
                     ],
                   );
                 } else {
-                  return _buildFormPanel();
+                  // Usa a mesma instância única aqui também
+                  return formPanel;
                 }
               },
             ),

@@ -1,11 +1,13 @@
 // =================================================================
 // 📁 ARQUIVO: lib/services/nutrition_service.dart
 // =================================================================
-// 🧠 Serviço para realizar cálculos nutricionais, como o Gasto Energético Total.
+// 🧠 Serviço para realizar cálculos nutricionais, incluindo as Metas de Ingestão (DRIs).
 
 //import 'dart:math';
+import '../models/dri_model.dart';
 import '../models/user_model.dart';
 import '../models/family_member_model.dart';
+//import '../models/dri_model.dart';
 
 class NutritionService {
   // Calcula a idade a partir da data de nascimento.
@@ -95,6 +97,45 @@ class NutritionService {
     
     // GET = TMB * Fator de Atividade
     return bmr * activityMultiplier;
+  }
+
+  // Calcula as Metas de Ingestão Diária (DRIs)
+  DietaryReferenceIntake calculateDRIs({
+    required double weight,
+    required double height,
+    required DateTime birthDate,
+    required String gender,
+    required String activityLevel,
+    required String goal, // 'Manter Peso', 'Aumentar Peso', 'Diminuir Peso'
+  }) {
+    double tdee = calculateTDEE(
+      weight: weight,
+      height: height,
+      birthDate: birthDate,
+      gender: gender,
+      activityLevel: activityLevel,
+    );
+
+    // Ajusta as calorias com base na meta
+    double targetCalories = tdee;
+    if (goal == 'Aumentar Peso') {
+      targetCalories += 400; // Superavit calórico moderado
+    } else if (goal == 'Diminuir Peso') {
+      targetCalories -= 400; // Déficit calórico moderado
+    }
+
+    // Calcula os macronutrientes com base numa distribuição padrão (40% C, 30% P, 30% G)
+    // 1g de Proteína/Carboidrato = 4 kcal | 1g de Gordura = 9 kcal
+    double proteinGrams = (targetCalories * 0.30) / 4;
+    double carbsGrams = (targetCalories * 0.40) / 4;
+    double fatGrams = (targetCalories * 0.30) / 9;
+
+    return DietaryReferenceIntake(
+      calories: targetCalories,
+      proteinGrams: proteinGrams,
+      carbsGrams: carbsGrams,
+      fatGrams: fatGrams,
+    );
   }
 
   // Calcula o GET total para toda a família.

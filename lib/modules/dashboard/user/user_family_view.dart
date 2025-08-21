@@ -1,16 +1,17 @@
 // =================================================================
 // 📁 ARQUIVO: lib/modules/user/user_family_view.dart
 // =================================================================
-// 👨‍👩‍👧‍👦 Tela redesenhada para visualizar a família em grelha de cards.
+// 👨‍👩‍👧‍👦 Tela final e completa para visualizar a família em grelha de cards.
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
-
+//import 'package:intl/intl.dart';
 import '../../../core/routes.dart';
+import '../../../models/dri_model.dart';
 import '../../../models/family_member_model.dart';
 import '../../../models/user_model.dart';
 import '../../../services/database_service.dart';
+import '../../../services/nutrition_service.dart';
 
 class UserFamilyViewPage extends StatefulWidget {
   const UserFamilyViewPage({super.key});
@@ -21,6 +22,7 @@ class UserFamilyViewPage extends StatefulWidget {
 
 class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
   late final DatabaseService _dbService;
+  final NutritionService _nutritionService = NutritionService();
   Future<AppUser?>? _adminUserFuture;
 
   @override
@@ -29,24 +31,39 @@ class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       _dbService = DatabaseService(uid: user.uid);
-      _loadAdminData(); // Carrega os dados do admin pela primeira vez
+      _loadAdminData();
     }
   }
 
-  // CORREÇÃO: Função para carregar/recarregar os dados do admin
   void _loadAdminData() {
     setState(() {
       _adminUserFuture = _dbService.getUserData();
     });
   }
 
-  void _showMemberDetails(BuildContext context, FamilyMember member) {
+  void _showProfileDetails(BuildContext context, {AppUser? admin, FamilyMember? member}) {
+    final name = admin?.name ?? member?.name;
+    final relationship = admin != null ? 'Administrador' : member?.relationship;
+    
+    final canCalculateDRI = (admin?.weight != null && admin?.height != null && admin?.birthDate != null && admin?.gender != null && admin?.activityLevel != null && admin?.goal != null) ||
+                            (member?.weight != null && member?.height != null && member?.birthDate != null && member?.gender != null && member?.activityLevel != null && member?.goal != null);
+
+    DietaryReferenceIntake? dri;
+    if (canCalculateDRI) {
+      dri = _nutritionService.calculateDRIs(
+        weight: admin?.weight ?? member!.weight!,
+        height: admin?.height ?? member!.height!,
+        birthDate: admin?.birthDate?.toDate() ?? member!.birthDate!.toDate(),
+        gender: admin?.gender ?? member!.gender!,
+        activityLevel: admin?.activityLevel ?? member!.activityLevel!,
+        goal: admin?.goal ?? member!.goal!,
+      );
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
         return Container(
           padding: const EdgeInsets.all(24),
@@ -54,36 +71,33 @@ class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(member.name, style: Theme.of(context).textTheme.headlineSmall),
-              Text(member.relationship, style: TextStyle(color: Colors.grey.shade600)),
+              Text(name ?? 'Perfil', style: Theme.of(context).textTheme.headlineSmall),
+              Text(relationship ?? '', style: TextStyle(color: Colors.grey.shade600)),
               const Divider(height: 32),
-              ListTile(
-                leading: const Icon(Icons.monitor_weight_outlined),
-                title: Text('Peso: ${member.weight?.toStringAsFixed(1) ?? 'N/A'} kg'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.height_outlined),
-                title: Text('Altura: ${member.height?.toStringAsFixed(0) ?? 'N/A'} cm'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.cake_outlined),
-                title: Text('Nascimento: ${member.birthDate != null ? DateFormat('dd/MM/yyyy').format(member.birthDate!.toDate()) : 'N/A'}'),
-              ),
+              
+              if (dri != null)
+                _buildDriDisplay(dri)
+              else
+                const Center(child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  child: Text('Preencha todas as informações de saúde no perfil para ver as metas de ingestão.'),
+                )),
+
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
+                  TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Fechar')),
                   const SizedBox(width: 8),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.edit_outlined),
                     label: const Text('Editar'),
                     onPressed: () {
-                      Navigator.of(ctx).pop(); // Fecha o painel
-                      Navigator.of(context).pushNamed(AppRoutes.userEditor, arguments: {
-                        'isFamilyMember': true,
-                        'memberData': member,
-                      });
+                      Navigator.of(ctx).pop();
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.userEditor,
+                        arguments: admin != null ? {'isFamilyMember': false} : {'isFamilyMember': true, 'memberData': member},
+                      ).then((_) => _loadAdminData());
                     },
                   ),
                 ],
@@ -116,23 +130,23 @@ class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
             ),
           ),
           SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.all(16),
-                  sliver: StreamBuilder<List<FamilyMember>>(
-                    stream: _dbService.familyStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
-                      }
-                      if (snapshot.hasError) {
-                        return SliverFillRemaining(child: Center(child: Text('Erro: ${snapshot.error}', style: const TextStyle(color: Colors.white))));
-                      }
-                      
-                      final familyMembers = snapshot.data ?? [];
+            child: StreamBuilder<List<FamilyMember>>(
+              stream: _dbService.familyStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Erro: ${snapshot.error}', style: const TextStyle(color: Colors.white)));
+                }
+                
+                final familyMembers = snapshot.data ?? [];
 
-                      return SliverGrid(
+                return CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.all(16),
+                      sliver: SliverGrid(
                         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                           maxCrossAxisExtent: 200,
                           childAspectRatio: 3 / 4,
@@ -145,7 +159,7 @@ class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
                               return FutureBuilder<AppUser?>(
                                 future: _adminUserFuture,
                                 builder: (context, adminSnapshot) {
-                                  if (!adminSnapshot.hasData) return const Card(); // Placeholder
+                                  if (!adminSnapshot.hasData) return const Card();
                                   return _buildAdminCard(context, adminSnapshot.data!);
                                 },
                               );
@@ -155,11 +169,11 @@ class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
                           },
                           childCount: 1 + familyMembers.length,
                         ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -176,11 +190,7 @@ class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
   Widget _buildAdminCard(BuildContext context, AppUser admin) {
     return Card(
       child: InkWell(
-        // CORREÇÃO: Ao navegar para editar, usamos .then() para recarregar os dados no retorno.
-        onTap: () => Navigator.of(context).pushNamed(
-          AppRoutes.userEditor,
-          arguments: {'isFamilyMember': false},
-        ).then((_) => _loadAdminData()), // Recarrega os dados do admin quando voltamos
+        onTap: () => _showProfileDetails(context, admin: admin),
         child: Column(
           children: [
             Expanded(
@@ -224,7 +234,7 @@ class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
   Widget _buildFamilyMemberCard(BuildContext context, FamilyMember member) {
     return Card(
       child: InkWell(
-        onTap: () => _showMemberDetails(context, member),
+        onTap: () => _showProfileDetails(context, member: member),
         child: Column(
           children: [
             Expanded(
@@ -262,6 +272,61 @@ class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDriDisplay(DietaryReferenceIntake dri) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Metas Diárias de Ingestão', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 16),
+        Center(
+          child: Text(
+            '${dri.calories.toStringAsFixed(0)} kcal',
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildMacroIndicator('Proteínas', dri.proteinGrams, Colors.blue),
+            _buildMacroIndicator('Carboidratos', dri.carbsGrams, Colors.orange),
+            _buildMacroIndicator('Gorduras', dri.fatGrams, Colors.purple),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _buildMacroIndicator(String label, double grams, Color color) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: 70,
+          height: 70,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CircularProgressIndicator(
+                value: 1.0,
+                backgroundColor: color.withOpacity(0.2),
+                color: color,
+                strokeWidth: 8,
+              ),
+              Center(
+                child: Text(
+                  '${grams.toStringAsFixed(0)}g',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

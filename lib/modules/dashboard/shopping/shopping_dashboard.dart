@@ -50,7 +50,7 @@ class ShoppingPage extends StatelessWidget {
                         context,
                         icon: Icons.shopping_basket_outlined,
                         title: 'Minhas Compras',
-                        subtitle: 'Veja e atualize os seus itens',
+                        subtitle: 'Veja e atualize sua lista de compras',
                         onTap: () {
                           Navigator.of(context).pushNamed(AppRoutes.shoppingList);
                         },
@@ -59,7 +59,7 @@ class ShoppingPage extends StatelessWidget {
                         context,
                         icon: Icons.history_edu_outlined,
                         title: 'Histórico de Compras',
-                        subtitle: 'Consulte as suas compras passadas',
+                        subtitle: 'Listas de compras passadas',
                         onTap: () {
                           Navigator.of(context).pushNamed(AppRoutes.purchaseHistory);
                         },

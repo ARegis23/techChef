@@ -1,31 +1,35 @@
 rules_version = '2';
-
-// Define as regras para o serviço cloud.firestore
 service cloud.firestore {
-  // Aplica as regras a todos os documentos na sua base de dados
   match /databases/{database}/documents {
 
-    // Regra para a coleção 'users'
     match /users/{userId} {
       // Permite que um utilizador autenticado leia e escreva apenas no seu próprio documento.
       allow read, write: if request.auth != null && request.auth.uid == userId;
 
       // Regra para a subcoleção 'family'
       match /family/{memberId} {
-        // Permite que o dono da conta (o admin) gerencie os seus familiares.
         allow read, write, delete: if request.auth != null && request.auth.uid == userId;
       }
 
-      // Permite que o o admin gerencie as suas receitas.
+      // Regra para a subcoleção 'recipes'
       match /recipes/{recipeId} {
         allow read, write, delete: if request.auth != null && request.auth.uid == userId;
       }
-      
-      // Permite que o admin gira o seu próprio estoque.
+
+      // Regra para a subcoleção 'inventory'
       match /inventory/{itemId} {
         allow read, write, delete: if request.auth != null && request.auth.uid == userId;
       }
 
+      // NOVA REGRA: Permite que o admin gira a sua lista de compras ativa.
+      match /shoppingLists/{listId} {
+         allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // NOVA REGRA: Permite que o admin gira o seu histórico de compras.
+      match /shoppingHistory/{historyId} {
+         allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
     }
   }
 }

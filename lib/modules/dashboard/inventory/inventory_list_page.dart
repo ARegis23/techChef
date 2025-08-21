@@ -1,7 +1,7 @@
 // =================================================================
 // 📁 ARQUIVO: lib/modules/inventory/inventory_list_page.dart
 // =================================================================
-// 清单 Página principal para visualizar e gerir o estoque em tempo real.
+// Página principal para visualizar e gerir o estoque em tempo real.
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -75,9 +75,9 @@ class _InventoryListPageState extends State<InventoryListPage> {
                   title: Text(item.name),
                   trailing: Text('${item.quantity} ${item.unit}'),
                   onTap: () {
-                    // Navega para a tela de edição, passando os dados do item
+                    // NAVEGA PARA A NOVA TELA DE DETALHES
                     Navigator.of(context).pushNamed(
-                      AppRoutes.inventoryEditor,
+                      AppRoutes.inventoryItemDetails,
                       arguments: {'item': item},
                     );
                   },
