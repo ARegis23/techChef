@@ -5,7 +5,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:intl/intl.dart';
 import '../../../core/routes.dart';
 import '../../../models/dri_model.dart';
 import '../../../models/family_member_model.dart';
@@ -46,7 +45,7 @@ class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
     final relationship = admin != null ? 'Administrador' : member?.relationship;
     
     final canCalculateDRI = (admin?.weight != null && admin?.height != null && admin?.birthDate != null && admin?.gender != null && admin?.activityLevel != null && admin?.goal != null) ||
-                            (member?.weight != null && member?.height != null && member?.birthDate != null && member?.gender != null && member?.activityLevel != null && member?.goal != null);
+                              (member?.weight != null && member?.height != null && member?.birthDate != null && member?.gender != null && member?.activityLevel != null && member?.goal != null);
 
     DietaryReferenceIntake? dri;
     if (canCalculateDRI) {
@@ -275,58 +274,57 @@ class _UserFamilyViewPageState extends State<UserFamilyViewPage> {
     );
   }
 
+  // =================================================================
+  // 🔧 WIDGET ATUALIZADO
+  // =================================================================
   Widget _buildDriDisplay(DietaryReferenceIntake dri) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Metas Diárias de Ingestão', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
-        Center(
-          child: Text(
-            '${dri.calories.toStringAsFixed(0)} kcal',
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildMacroIndicator('Proteínas', dri.proteinGrams, Colors.blue),
-            _buildMacroIndicator('Carboidratos', dri.carbsGrams, Colors.orange),
-            _buildMacroIndicator('Gorduras', dri.fatGrams, Colors.purple),
-          ],
-        )
+        _buildNutrientRow('Valor energético', dri.calories, 'kcal'),
+        const Divider(),
+        _buildNutrientRow('Carboidratos', dri.carbsGrams, 'g'),
+        _buildNutrientRow('Açúcares totais', dri.totalSugarsGrams, 'g', isSubItem: true),
+        _buildNutrientRow('Açúcares adicionados', dri.addedSugarsGrams, 'g', isSubItem: true),
+        const Divider(),
+        _buildNutrientRow('Proteínas', dri.proteinGrams, 'g'),
+        const Divider(),
+        _buildNutrientRow('Gorduras totais', dri.fatGrams, 'g'),
+        _buildNutrientRow('Gorduras saturadas', dri.saturatedFatsGrams, 'g', isSubItem: true),
+        _buildNutrientRow('Gorduras trans', dri.transFatsGrams, 'g', isSubItem: true),
+        const Divider(),
+        _buildNutrientRow('Fibra alimentar', dri.fiberGrams, 'g'),
+        const Divider(),
+        _buildNutrientRow('Sódio', dri.sodiumMg, 'mg'),
       ],
     );
   }
 
-  Widget _buildMacroIndicator(String label, double grams, Color color) {
-    return Column(
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: 70,
-          height: 70,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              CircularProgressIndicator(
-                value: 1.0,
-                backgroundColor: color.withOpacity(0.2),
-                color: color,
-                strokeWidth: 8,
-              ),
-              Center(
-                child: Text(
-                  '${grams.toStringAsFixed(0)}g',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
-            ],
+  // =================================================================
+  // ✨ NOVO WIDGET AUXILIAR
+  // =================================================================
+  Widget _buildNutrientRow(String label, double value, String unit, {bool isSubItem = false}) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: isSubItem ? 16.0 : 0,
+        top: 8.0,
+        bottom: 8.0,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontSize: isSubItem ? 14 : 16)),
+          Text(
+            '${value.toStringAsFixed(unit == 'kcal' ? 0 : 1)} $unit',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: isSubItem ? 14 : 16,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

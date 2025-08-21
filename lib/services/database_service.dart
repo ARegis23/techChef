@@ -11,6 +11,7 @@ import '../models/user_model.dart';
 import '../models/family_member_model.dart';
 import '../models/recipe_model.dart';
 import '../models/inventory_item_model.dart';
+import '../models/meal_plan_model.dart';
 
 class DatabaseService {
   final String? uid;
@@ -220,4 +221,33 @@ class DatabaseService {
       }
     });
   }
+
+
+  // --- NOVOS MÉTODOS PARA O PLANEJADOR DE REFEIÇÕES ---
+  CollectionReference get mealPlansCollection => userCollection.doc(uid).collection('mealPlans');
+
+  /// Gera um ID único para uma semana com base numa data. Ex: '2025-W34'
+  String getWeekId(DateTime date) {
+    final year = date.year;
+    // Cálculo do número da semana ISO 8601
+    final dayOfYear = int.parse(DateFormat("D").format(date));
+    final weekNumber = ((dayOfYear - date.weekday + 10) / 7).floor();
+    return '$year-W$weekNumber';
+  }
+
+  /// Stream que observa o plano de refeições para a semana atual.
+  Stream<MealPlan?> get currentWeekMealPlanStream {
+    final weekId = getWeekId(DateTime.now());
+    return mealPlansCollection.doc(weekId).snapshots().map((snapshot) {
+      if (!snapshot.exists || snapshot.data() == null) return null;
+      return MealPlan.fromFirestore(snapshot);
+    });
+  }
+
+  /// Cria ou atualiza um plano de refeições no Firestore.
+  Future<void> upsertMealPlan(MealPlan plan) async {
+    return await mealPlansCollection.doc(plan.id).set(plan.toMap());
+  }
+
+
 }

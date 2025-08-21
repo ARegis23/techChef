@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../modules/dashboard/inventory/inventory_editor_page.dart';
 import '../modules/dashboard/inventory/inventory_item_details_page.dart';
 import '../modules/dashboard/inventory/inventory_list_page.dart';
+import '../modules/dashboard/menus/meal_planner_page.dart';
 import '../modules/dashboard/menus/menu_dashboard.dart';
 import '../modules/dashboard/menus/recipe_book_page.dart';
 import '../modules/dashboard/menus/recipe_editor_page.dart';
@@ -70,6 +71,11 @@ class RouteGenerator {
       case AppRoutes.recipeEditor:
         final recipeToEdit = args?['recipe'] as Recipe?;
         return RecipeEditorPage(recipe: recipeToEdit);
+      
+      // =================================================================
+      // 🚀 NOVA ROTA ADICIONADA
+      // =================================================================
+      case AppRoutes.mealPlanner: return const MealPlannerPage();
 
       // Compras e Estoque
       case AppRoutes.shoppingPage: return const ShoppingPage();
@@ -80,7 +86,6 @@ class RouteGenerator {
         final itemToEdit = args?['item'] as InventoryItem?;
         return InventoryEditorPage(item: itemToEdit);
       
-      // CORREÇÃO: Leitura segura dos argumentos para evitar o TypeError 
       case AppRoutes.inventoryItemDetails:
         final item = args?['item'];
         if (item is InventoryItem) {

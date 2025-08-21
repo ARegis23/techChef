@@ -21,14 +21,20 @@ service cloud.firestore {
         allow read, write, delete: if request.auth != null && request.auth.uid == userId;
       }
 
-      // NOVA REGRA: Permite que o admin gira a sua lista de compras ativa.
+      // Regra para a lista de compras ativa.
       match /shoppingLists/{listId} {
          allow read, write, delete: if request.auth != null && request.auth.uid == userId;
       }
 
-      // NOVA REGRA: Permite que o admin gira o seu histórico de compras.
+      // Regra para o histórico de compras.
       match /shoppingHistory/{historyId} {
          allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // NOVA REGRA ADICIONADA AQUI
+      // Permite que o utilizador gira os seus planos de refeições.
+      match /mealPlans/{planId} {
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
       }
     }
   }

@@ -5,20 +5,24 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // 1. Importa o pacote
 import 'package:provider/provider.dart';
 import '../core/theme/theme_provider.dart';
 import '../firebase_options.dart';
 import '../app.dart';
 import '../services/auth_service.dart';
 
-void main() async {
+Future<void> main() async {
   // Garanta que os bindings do Flutter foram inicializados
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
-  // Inicialize o Firebase
+  // =================================================================
+  // ✨ LÓGICA ADICIONADA
+  // =================================================================
+  // 2. Carrega as variáveis de ambiente do arquivo .env
+  await dotenv.load(fileName: ".env");
+
+  // 3. Inicializa o Firebase (removida a chamada duplicada)
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

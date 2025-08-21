@@ -61,10 +61,7 @@ class MenusPage extends StatelessWidget {
                         title: 'Planejador Semanal',
                         subtitle: 'Organize as refeições da sua semana',
                         onTap: () {
-                          // Navigator.of(context).pushNamed(AppRoutes.mealPlanner);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Funcionalidade em breve!')),
-                          );
+                          Navigator.of(context).pushNamed(AppRoutes.mealPlanner);
                         },
                       ),
                     ],
