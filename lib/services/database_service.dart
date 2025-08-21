@@ -5,6 +5,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 import '../models/shopping_list_model.dart';
 import '../models/user_model.dart';
 import '../models/family_member_model.dart';
@@ -64,7 +65,9 @@ class DatabaseService {
       if (!doc.exists) return null;
       return AppUser.fromFirestore(doc);
     } catch(e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
       return null;
     }
   }
@@ -110,6 +113,7 @@ class DatabaseService {
 
   Future<void> upsertInventoryItem(InventoryItem item) async {
     final docId = item.id == 'new' ? null : item.id;
+    // O código de debug foi removido pois o problema foi identificado.
     return await inventoryCollection.doc(docId).set(item.toMap());
   }
 
@@ -154,14 +158,11 @@ class DatabaseService {
     });
   }
 
-  // MÉTODO ATUALIZADO com a lógica de somar itens no estoque
   Future<void> finalizeShopping(ShoppingList list, bool wasPartial) async {
     final purchasedItems = list.items.where((item) => item.isBought).toList();
     if (purchasedItems.isEmpty) return;
 
-    // Usamos uma transação para garantir que a leitura e a escrita no estoque sejam atómicas
     await FirebaseFirestore.instance.runTransaction((transaction) async {
-      // 1. Adiciona a lista ao histórico
       final historyDoc = shoppingHistoryCollection.doc();
       transaction.set(historyDoc, {
         'name': 'Compra de ${DateFormat('dd/MM/yyyy').format(list.createdAt.toDate())} (${wasPartial ? 'Parcial' : 'Total'})',
@@ -169,24 +170,31 @@ class DatabaseService {
         'items': purchasedItems.fold<Map<String, dynamic>>({}, (prev, item) => prev..[item.id] = item.toMap()),
       });
 
-      // 2. Atualiza o estoque com os itens comprados
       for (var item in purchasedItems) {
-        // Procura por um item existente no estoque com o mesmo nome (ignorando maiúsculas/minúsculas)
         final querySnapshot = await inventoryCollection.where('name', isEqualTo: item.name).limit(1).get();
         
         if (querySnapshot.docs.isNotEmpty) {
-          // Se o item já existe, soma a quantidade
           final existingDoc = querySnapshot.docs.first;
           final existingItem = InventoryItem.fromFirestore(existingDoc);
           final newQuantity = existingItem.quantity + item.quantity;
           
+          // Atualiza o item existente
           transaction.update(existingDoc.reference, {
             'quantity': newQuantity,
             'lastPrice': item.price,
             'lastPurchaseDate': list.createdAt,
+            // Se o item existente não tiver barcode, atualiza com o novo
+            'barcode': existingItem.barcode ?? item.barcode,
+            'calories_100g': existingItem.calories_100g ?? item.calories_100g,
+            'proteins_100g': existingItem.proteins_100g ?? item.proteins_100g,
+            'carbs_100g': existingItem.carbs_100g ?? item.carbs_100g,
+            'fats_100g': existingItem.fats_100g ?? item.fats_100g,
           });
         } else {
-          // Se não existe, cria um novo item no estoque
+          // =================================================================
+          // 🔧 LÓGICA ATUALIZADA
+          // =================================================================
+          // Cria um novo item no estoque com todas as informações.
           final inventoryRef = inventoryCollection.doc();
           transaction.set(inventoryRef, {
             'name': item.name,
@@ -194,12 +202,16 @@ class DatabaseService {
             'unit': item.unit,
             'lastPrice': item.price,
             'lastPurchaseDate': list.createdAt,
-            // Adicione outros campos da API aqui se necessário
+            // Passando os novos dados para o item de inventário
+            'barcode': item.barcode,
+            'calories_100g': item.calories_100g,
+            'proteins_100g': item.proteins_100g,
+            'carbs_100g': item.carbs_100g,
+            'fats_100g': item.fats_100g,
           });
         }
       }
 
-      // 3. Atualiza a lista de compras ativa
       if (wasPartial) {
         final itemsToKeep = list.items.where((item) => !item.isBought).fold<Map<String, dynamic>>({}, (prev, item) => prev..[item.id] = item.toMap());
         transaction.update(activeShoppingListRef, {'items': itemsToKeep});

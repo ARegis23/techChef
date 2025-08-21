@@ -5,7 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:intl/intl.dart';
+import '../../../models/inventory_item_model.dart'; // Importe o modelo de inventário
 import '../../../services/database_service.dart';
 import '../../../services/open_food_facts_service.dart';
 import '../../../models/shopping_list_model.dart';
@@ -28,6 +28,12 @@ class _ShoppingPageState extends State<ShoppingListPage> {
   String _selectedUnit = 'unidade(s)';
   final List<String> _units = ['unidade(s)', 'g', 'kg', 'ml', 'L'];
   bool _isLoading = false;
+
+  // =================================================================
+  // 🔧 VARIÁVEL ADICIONADA
+  // =================================================================
+  // Para guardar o produto completo retornado pela API.
+  InventoryItem? _scannedProduct;
 
   @override
   void initState() {
@@ -52,17 +58,24 @@ class _ShoppingPageState extends State<ShoppingListPage> {
       final product = await _apiService.getProductByBarcode(_barcodeController.text.trim());
       if (product != null) {
         setState(() {
+          // =================================================================
+          // 🔧 LÓGICA ATUALIZADA
+          // =================================================================
+          // Guarda o produto inteiro, não apenas o nome.
+          _scannedProduct = product;
           _nameController.text = product.name;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Produto "${product.name}" encontrado!'), backgroundColor: Colors.green),
         );
       } else {
+        setState(() => _scannedProduct = null); // Limpa se não encontrar
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Produto não encontrado.'), backgroundColor: Colors.orange),
         );
       }
     } catch (e) {
+      setState(() => _scannedProduct = null);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao procurar produto: $e'), backgroundColor: Colors.red),
       );
@@ -78,12 +91,23 @@ class _ShoppingPageState extends State<ShoppingListPage> {
       );
       return;
     }
+
+    // =================================================================
+    // 🔧 LÓGICA ATUALIZADA
+    // =================================================================
+    // Passa os dados nutricionais do _scannedProduct para o ShoppingListItem.
     final item = ShoppingListItem(
       id: const Uuid().v4(),
       name: _nameController.text,
       price: double.tryParse(_priceController.text) ?? 0.0,
       quantity: double.tryParse(_quantityController.text) ?? 1.0,
       unit: _selectedUnit,
+      // Anexa as informações da API ao item da lista
+      barcode: _scannedProduct?.barcode,
+      calories_100g: _scannedProduct?.calories_100g,
+      proteins_100g: _scannedProduct?.proteins_100g,
+      carbs_100g: _scannedProduct?.carbs_100g,
+      fats_100g: _scannedProduct?.fats_100g,
     );
     _dbService.upsertShoppingItem(item);
     _clearForm();
@@ -94,7 +118,10 @@ class _ShoppingPageState extends State<ShoppingListPage> {
     _priceController.clear();
     _quantityController.clear();
     _barcodeController.clear();
-    setState(() => _selectedUnit = _units.first);
+    setState(() {
+      _selectedUnit = _units.first;
+      _scannedProduct = null; // Limpa o produto escaneado também
+    });
   }
   
   void _showFinalizeDialog(ShoppingList list) {
@@ -116,7 +143,7 @@ class _ShoppingPageState extends State<ShoppingListPage> {
   }
 
   void _confirmStockUpdate(ShoppingList list, bool isPartial) {
-     showDialog(context: context, builder: (ctx) => AlertDialog(
+      showDialog(context: context, builder: (ctx) => AlertDialog(
       title: const Text('Atualizar Estoque?'),
       content: const Text('Deseja adicionar os itens comprados ao seu estoque?'),
       actions: [
@@ -131,6 +158,8 @@ class _ShoppingPageState extends State<ShoppingListPage> {
 
   @override
   Widget build(BuildContext context) {
+    // O resto do seu Widget build continua igual...
+    // Nenhuma mudança visual é necessária aqui.
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
